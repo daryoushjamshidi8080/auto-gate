@@ -1,8 +1,11 @@
 __pycache__/
 *.pyc
-.env
+/env
 *.log
 node_modules/
 dist/
 .idea/
 .vscode/
+/.env
+.env/
+/project/autoGate/db.sqlite3
