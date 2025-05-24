@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}ورود{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-center p-5" style="background-color: #f3efefa4;">
+
+        <div class="m-5">
+            <form action="{% url 'account-login' %}" method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ forms.username }}
+                </div>
+                <div class="mb-3">
+                    {{ forms.password }}
+                </div>
+            
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">ورود</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+{% endblock %}
