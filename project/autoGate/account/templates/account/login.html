@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-center p-5" style="background-color: #f3efefa4;">
 
         <div class="m-5">
-            <form action="{% url 'account-login' %}" method="post">
+            <form action="{% url 'account:account-login' %}" method="post">
                 {% csrf_token %}
                 <div class="mb-3">
                     {{ forms.username }}

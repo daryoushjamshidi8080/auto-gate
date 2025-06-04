@@ -1,10 +1,8 @@
 from django.shortcuts import render
 from django.views import View
-# Create your views here.
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-
-
-class home(View):
+class home(LoginRequiredMixin, View):
     def get(self, request):
         return render(request, "home/index.html")
     def post(self, request):

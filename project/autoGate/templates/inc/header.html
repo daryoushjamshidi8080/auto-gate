@@ -2,24 +2,30 @@
 <ul class="nav bg-light p-3 shadow-sm">
 
     <li class="nav-item me-auto p-0">
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="{% url 'home:home' %}">
             <img class="p-0 m-0" src="{% static 'images/logo.png' %}" alt="لوگو"  width="50" height="50">
         </a>
     </li>
 
-    <li class="nav-item">
-        <a class="nav-link active text-primary fw-bold" aria-current="page" href="#">خانه</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link active text-primary fw-bold" aria-current="page" href="#">گزارش</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link active text-primary fw-bold" aria-current="page" href="#">خودروها</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link active text-primary fw-bold" aria-current="page" href="#">تنظیمات</a>
-    </li>    
-    <li class="nav-item">
-        <a class="btn btn-primary fw-bold text-white" href="#">خروج</a>
-    </li>
+    {% if user.is_authenticated %}
+        <li class="nav-item">
+            <a class="nav-link active text-primary fw-bold" aria-current="page" href="{% url 'home:home' %}">خانه</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active text-primary fw-bold" aria-current="page" href="#">گزارش</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active text-primary fw-bold" aria-current="page" href="#">خودروها</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active text-primary fw-bold" aria-current="page" href="{% url 'setting:setting' %}">تنظیمات</a>
+        </li>
+        <li class="nav-item">
+            <a class="btn btn-primary fw-bold text-white" href="{% url 'account:account-logout' %}">خروج</a>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="btn btn-primary fw-bold text-white" href="{% url 'account:account-login' %}">ورود</a>
+        </li>
+    {% endif %}
 </ul>   

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "account.apps.AccountConfig",
     "home.apps.HomeConfig",
+    "setting.apps.SettingConfig",
 ]
 
 MIDDLEWARE = [
@@ -130,3 +131,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+LOGIN_URL = "/account/login/"
