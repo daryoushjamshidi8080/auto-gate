@@ -1,0 +1,36 @@
+<div class="mb-3">
+    {{ form.username.label_tag }}
+    {{ form.username }}
+    {% for error in form.username.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.first_name.label_tag }}
+    {{ form.first_name }}
+    {% for error in form.first_name.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.password.label_tag }}
+    {{ form.password }}
+    {% for error in form.password.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.password2.label_tag }}
+    {{ form.password2 }}
+    {% for error in form.password2.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="form-check mb-3">
+    {{ form.is_staff }}
+    {{ form.is_staff.label_tag }}
+</div>
+<div class="form-check mb-3">
+    {{ form.is_superuser }}
+    {{ form.is_superuser.label_tag }}
+</div>

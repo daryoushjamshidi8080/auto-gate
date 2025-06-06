@@ -1,9 +1,25 @@
-{% for field in form %}
 <div class="mb-3">
-    <label class="form-label">{{ field.label }}</label>
-    {{ field }}
-    {% for error in field.errors %}
+    {{ form.number.label_tag }}
+    {{ form.number }}
+    {% for error in form.number.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
-{% endfor %}
+
+<div class="mb-3">
+    {{ form.name.label_tag }}
+    {{ form.name }}
+    {% for error in form.name.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+
+<div class="mb-3">
+    {{ form.open_time.label_tag }}
+    {{ form.open_time }}
+</div>
+
+<div class="form-check mb-3">
+    {{ form.is_active }}
+    {{ form.is_active.label_tag }}
+</div>

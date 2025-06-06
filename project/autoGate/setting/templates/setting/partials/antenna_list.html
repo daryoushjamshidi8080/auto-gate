@@ -1,0 +1,47 @@
+<div class="m-lg-2">
+    <div class="container bg-white p-4 rounded shadow">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">درب ها</h5>
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAntennaModal">
+                    ایجاد درب جدید
+                </button>
+            </div>
+        </div>
+
+        <table class="table table-bordered table-striped text-center align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <!-- <th scope="col"><input type="checkbox"></th> -->
+                    <th scope="col">نام درب</th>
+                    <th scope="col">شماره رله</th>
+                    <th scope="col">زمان باز ماندن درب</th>
+                    <th scope="col">وضعیت</th>
+                    <th scope="col">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for antenna in antennas %}
+                <tr>
+                    <!-- <td><input type="checkbox"></td> -->
+                    <td>{{ antenna.name }}</td>
+                    <td>{{ antenna.number }}</td>
+                    <td>{{ antenna.open_time }}</td>
+                    <td style="color: rgb(30, 255, 0);">
+                        {% if antenna.is_active %} online{% else %} <span style="color: black !important;" >offline</span>{% endif %}
+                    </td>
+                    <td class="d-flex">
+                        <button class="btn btn-sm btn-success me-1 update-antenna" data-id="{{ antenna.id }}">ویرایش</button>
+                        <button class="btn btn-sm btn-danger delete-antenna" data-id="{{ antenna.id }}">حذف</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">هیچ آنتنی یافت نشد.</td>
+                </tr>
+                {% endfor %}
+                <!-- سطرهای دیگر مثل بالا تکرار می‌شن -->
+            </tbody>
+        </table>
+    </div>
+</div>
