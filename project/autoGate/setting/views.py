@@ -7,8 +7,11 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 
 
+@method_decorator(user_passes_test(lambda u: u.is_superuser, login_url='/'), name='dispatch')
 class SettingView(LoginRequiredMixin, View):
     model_class = antennas
     def get(self, request):
@@ -16,7 +19,7 @@ class SettingView(LoginRequiredMixin, View):
         users =  User.objects.all()
         return render(request, "setting/setting.html", {"antennas": antennas, 'users':{users}})
     
-
+@method_decorator(user_passes_test(lambda u: u.is_superuser, login_url='/'), name='dispatch')
 class AntennaListPartialView(LoginRequiredMixin, View):
     def get(self, request):
         antenna_list = antennas.objects.all()
@@ -24,8 +27,9 @@ class AntennaListPartialView(LoginRequiredMixin, View):
             "antennas": antenna_list
         }, request=request)
         return JsonResponse({"html": html})
-
+@method_decorator(user_passes_test(lambda u: u.is_superuser, login_url='/'), name='dispatch')
 class CreateAntennaView(LoginRequiredMixin, View):
+
     def get(self, request):
         form = AntennaForm()
         html = render_to_string("setting/partials/antenna_form.html", {"form": form}, request=request)
@@ -39,13 +43,15 @@ class CreateAntennaView(LoginRequiredMixin, View):
         html = render_to_string("setting/partials/antenna_form.html", {"form": form}, request=request)
         return JsonResponse({"success": False, "form_html": html})
 
-class DeleteAntennaView(View):
+
+@method_decorator(user_passes_test(lambda u: u.is_superuser), name='dispatch')
+class DeleteAntennaView(LoginRequiredMixin ,View):
     def post(self, request, antenna_id):
         antenna = get_object_or_404(antennas, pk=antenna_id)
         antenna.delete()
         return JsonResponse({"success": True})
 
-
+@method_decorator(user_passes_test(lambda u: u.is_superuser, login_url='/'), name='dispatch')
 class UpdateAntennaView(View):
     form_class = AntennaForm
     def get(self, request, antenna_id):
@@ -55,13 +61,14 @@ class UpdateAntennaView(View):
         return JsonResponse({"form_html": html})
     def post(self, request, antenna_id):
         pass
-
+@method_decorator(user_passes_test(lambda u: u.is_superuser, login_url='/'), name='dispatch')
 class UserListPartialView(View):
     def get(self, request):
         users = User.objects.all()
         html = render_to_string("setting/partials/user_list.html", {"users": users}, request=request)
         return JsonResponse({"html": html})
     
+@method_decorator(user_passes_test(lambda u: u.is_superuser, login_url='/'), name='dispatch')
 class CreateUserView(View):
     def get(self, request):
         form = CusstomUserCreationForm()
@@ -76,7 +83,7 @@ class CreateUserView(View):
         html = render_to_string("setting/partials/user_form.html", {"form": form}, request=request)
         return JsonResponse({"success": False, "form_html": html})
     
-
+@method_decorator(user_passes_test(lambda u: u.is_superuser, login_url='/'), name='dispatch')
 class DeleteUserView(View):
     def post(self, request, user_id):
         user = get_object_or_404(User, pk=user_id)  

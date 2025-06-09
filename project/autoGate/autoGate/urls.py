@@ -22,4 +22,5 @@ urlpatterns = [
     path("", include("home.urls", namespace="home")),
     path("account/", include("account.urls", namespace="account")),
     path("setting/", include("setting.urls", namespace="setting")),
+    path('tag/', include('tag.urls', namespace='tag')),
 ]

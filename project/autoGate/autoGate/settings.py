@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "account.apps.AccountConfig",
     "home.apps.HomeConfig",
     "setting.apps.SettingConfig",
+    "tag.apps.TagConfig",
 ]
 
 MIDDLEWARE = [
