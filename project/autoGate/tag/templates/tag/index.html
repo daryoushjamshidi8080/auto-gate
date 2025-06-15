@@ -11,7 +11,28 @@
     </div>
 </div>
 
+<div class="modal fade" id="createCarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="carCreateForm" method="post">
+                {% csrf_token %}
 
+                <div class="modal-header">
+                    <h5 class="modal-title">ایجاد خودرو</h5>
+                    <button type="button" class="btn-close"  data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="car-modal-body">
+                    <!-- loded by ajax -->
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">ثبت</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
 
 {% endblock content %}
 
@@ -33,8 +54,54 @@
             })
         }
         loadCarList()
-    });
+        window.loadCarList = loadCarList
 
+
+
+        const modal = document.getElementById('createCarModal');
+        const modalBody = document.getElementById('car-modal-body');
+        const form = document.getElementById('carCreateForm');
+
+        // AJAX load car form
+        modal.addEventListener('show.bs.modal', function () {
+            fetch("{% url 'tag:tag-create' %}")
+            .then(res => res.json())
+            .then(data => {
+                modalBody.innerHTML = data.form_html;
+            });
+        });
+
+
+        // AJAX create car
+        form.addEventListener('submit', function (e){
+            e.preventDefault(); 
+
+            const formData = new FormData(form);
+            fetch("{% url 'tag:tag-create' %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data =>{
+                if (data.success){
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    bsModal.hide();
+                    form.reset();
+                    alert("✅ خودرو با موفقیت ایجاد شد!");
+                    
+                    loadCarList();
+                    
+                }
+                else{
+                    modalBody.innerHTML = data.form_html;
+                    alert("❌ خطا در ایجاد خودرو");
+                }
+            })
+            
+        })
+
+
+    });
     
 </script>    
 {% endblock js %}

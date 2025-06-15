@@ -1,0 +1,31 @@
+<div class="mb-3">
+    {{ form.uid.label_tag }}
+    {{ form.uid }}
+    {% for error in form.uid.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.owner_name.label_tag }}
+    {{ form.owner_name }}
+    {% for error in form.owner_name.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.rule.label_tag }}
+    {{ form.rule }}
+    {% for error in form.rule.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.is_active.label_tag }}
+    {{ form.is_active }}
+    {% for error in form.is_active.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+
+
+<!-- <h1> loded by list </h1> -->
