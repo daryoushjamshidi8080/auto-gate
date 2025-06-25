@@ -11,7 +11,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="createCarModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="createNewTagModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="carCreateForm" method="post">
@@ -34,74 +34,151 @@
 
 </div>
 
+<div>
+    <div id="anonymous_tag">
+
+    </div>
+</div>
+
 {% endblock content %}
 
 
 {% block js %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
     document.addEventListener('DOMContentLoaded', function () {
+        const anonymousTag = document.getElementById('anonymous_tag');
         const carListDev = document.getElementById('carList');
-
-        function loadCarList() {
-            fetch("{% url 'tag:tag-list' %}")
-            .then(res => res.json())
-            .then(data => {
-                carListDev.innerHTML = data.html;
-            }).catch(err => {
-                carListDev.innerHTML = "<p>❌ خطا در بارگذاری لیست خودروها</p>";
-                console.error("Error loading car list:", err);
-            })
-        }
-        loadCarList()
-        window.loadCarList = loadCarList
-
-
-
-        const modal = document.getElementById('createCarModal');
+        const modalCreateCar = document.getElementById('createNewTagModal');
         const modalBody = document.getElementById('car-modal-body');
         const form = document.getElementById('carCreateForm');
 
-        // AJAX load car form
-        modal.addEventListener('show.bs.modal', function () {
+            // const carList = document.getElementById('carList')
+
+        
+        function loadAnonymousTag() {
+            fetch('{% url "tag:tag-anonymous" %}')
+                .then(res => res.json())
+                .then(data => {
+                    anonymousTag.innerHTML = data.html;
+                }).catch(err => {
+                    anonymousTag.innerHTML = "<p> خطا در بارگذاری لیست تگ‌ها ناشناس </p>";
+                });
+        }
+
+        function loadCarList() {
+            fetch("{% url 'tag:tag-list' %}")
+                .then(res => res.json())
+                .then(data => {
+                    carListDev.innerHTML = data.html;
+                }).catch(err => {
+                    carListDev.innerHTML = "<p>❌ خطا در بارگذاری لیست خودروها</p>";
+                    console.error("Error loading car list:", err);
+                });
+        }
+
+        // تعریف سراسری برای استفاده بیرون از این اسکوپ
+        window.loadAnonymousTag = loadAnonymousTag;
+        window.loadCarList = loadCarList;
+
+        // فراخوانی اولیه
+        loadAnonymousTag();
+        loadCarList();
+
+
+        carListDev.addEventListener('click', function (e) {
+            if (e.target.classList.contains('delete-tag')) {
+
+
+                const tagId = e.target.dataset.id
+                // console.log()
+                fetch(`/tag/delete-tag/${tagId}/`, {
+                    method: 'post',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('خطای سورر یا مسیر اشتباهی')
+                        }
+                        return res.json()
+                    })
+                    .then(data => {
+                        if (data.status === 200) {
+                            carListDev.innerHTML = data.html;
+                            alert('با موفقیت حذف شد');
+                            loadCarList();
+
+                        } else {
+                            alert('حذف انجام نپذیرفت')
+                        }
+
+                    }).catch(err => {
+                        console.error('error : ', err)
+                    })
+            }
+        })
+
+
+
+        // بارگذاری فرم در هنگام باز شدن مدال
+        modalCreateCar.addEventListener('show.bs.modal', function () {
             fetch("{% url 'tag:tag-create' %}")
-            .then(res => res.json())
-            .then(data => {
-                modalBody.innerHTML = data.form_html;
-            });
+                .then(res => res.json())
+                .then(data => {
+                    modalBody.innerHTML = data.form_html;
+                    const uidField = document.getElementById('id_uid')
+                    const numberUid = document.getElementById('uid_tag')
+
+                    if(uidField){
+                        uidField.value = numberUid.textContent
+                    }
+                });
         });
 
+        
+    
+        // ایجاد خودرو با AJAX
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            
 
-        // AJAX create car
-        form.addEventListener('submit', function (e){
-            e.preventDefault(); 
 
             const formData = new FormData(form);
             fetch("{% url 'tag:tag-create' %}", {
                 method: 'POST',
                 body: formData
             })
-            .then(res => res.json())
-            .then(data =>{
-                if (data.success){
-                    const bsModal = bootstrap.Modal.getInstance(modal);
-                    bsModal.hide();
-                    form.reset();
-                    alert("✅ خودرو با موفقیت ایجاد شد!");
-                    
-                    loadCarList();
-                    
-                }
-                else{
-                    modalBody.innerHTML = data.form_html;
-                    alert("❌ خطا در ایجاد خودرو");
-                }
-            })
-            
-        })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        const bsModal = bootstrap.Modal.getInstance(modalCreateCar);
+                        bsModal.hide();
+                        form.reset();
+                        alert("✅ خودرو با موفقیت ایجاد شد!");
 
+                        loadCarList();
+                    } else {
+                        modalBody.innerHTML = data.form_html;
+                        alert("❌ خطا در ایجاد خودرو");
+                    }
+                });
+        });
 
     });
-    
-</script>    
+
+
+
+    setInterval(()=>{
+        window.loadAnonymousTag()
+    }, 2000)
+
+
+
+
+
+</script>
 {% endblock js %}

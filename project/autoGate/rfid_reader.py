@@ -1,20 +1,11 @@
+from threading import Thread, Lock, Event
+from threading import Thread, Lock
 import serial.tools.list_ports
 import serial
 import time
 import requests
 import json
-
-API_URL = "http://127.0.0.1:8000/rfid/read_tag/"
-
-
-def send_uid_to_server(uid, reader='gate-1'):
-    try:
-        payload = {"uid": uid, "reader_id": reader}
-        res = requests.post(API_URL, json=payload, timeout=3)
-        print("🔗 Server response:", res.json())
-
-    except Exception as e:
-        print("⚠️  Could not reach server:", e)
+from threading import Thread, Event, Lock
 
 
 # list IDs of Arfid device
@@ -36,7 +27,7 @@ def connect_to_rfid():
                 print(f"✅ connected to RFID: {port.device}")
                 return ser
             except serial.SerialException:
-                print(f"❌ error in connections : {port.device}: {e}")
+                print(f"❌ error in connections : {port.device}: ")
     return None
 
 
@@ -44,84 +35,124 @@ def connect_to_rfid():
 ser = connect_to_rfid()
 
 
-def ceachar(*args):
-    data = 0
-    for number in args:
-        number_des = int(number, 16)
-        data += number_des
-    data = 4095-(data - 1)
-    return hex(data & 255)
+def checksum(*bs):
+    cmd = []
+    for num in bs:
+        cmd.append(int(num, 16))
+    total = sum(cmd)
+    return hex((4095 - (total - 1)) & 0xFF)
 
 
-print(ceachar())
+def make_cmd(addr, *args):
+    cmd = ['0x0A', hex(addr)]
+    cmd_str = ''
+    for arg in args:
+        cmd.append(hex(int(arg)))
+    for hexnum in cmd:
+        car = hexnum[2:]
 
-# فرمان خواندن تگ (بسته به مدل دستگاه ممکنه فرق کنه)
-ceach_sum = ceachar('0A', 'D2', '03', '80', '01')[-2:]
-get_tag = bytes.fromhex(f'0A D2 03 80 01 {ceach_sum}')
+        if len(car) == 1:
+            car = int(car)
+        cmd_str += '{:02}'.format(car) + ' '
+    cmd = cmd_str[:-1].split(' ')
+    check_sum = checksum(*cmd)
+
+    cmd_str += check_sum[2:]
+    print(cmd_str)
+    return bytes.fromhex(cmd_str)
 
 
-last_uid = None  # برای جلوگیری از تکرار پشت‌سر‌هم
+class RfidThread(Thread):
+    def __init__(self, ser: serial.Serial, lock: Lock,  addr: int, reader_id: str, stop_evt: Event):
+        super().__init__(daemon=True)
 
-print("🎯 lisining to read tag!")
+        self.ser = ser
+        self.lock = lock
+        self.addr = addr
+        self.reader_id = reader_id
+        self.stop_evt = stop_evt
+        self.last_frame = None
 
-while True:
-    try:
-        # ارسال دستور برای دریافت UID
-        ser.write(get_tag)
-        # time.sleep(0.03)
+        self.cmd_scan = make_cmd(addr, 0x03, 0x80, 0x01)
+        self.cmd_uid = make_cmd(addr, 0x03, 0x40, 0x01)
+        self.cmd_clear = make_cmd(addr, 0x02, 0x44)
+        self.cmd_active_rellay = make_cmd(addr, 0x04, 0x2d, 0x02, 0x01)
+        self.cmd_deactive_rellay = make_cmd(addr, 0x04, 0x2d, 0x02, 0x00)
 
-        # خواندن پاسخ
-        response = ser.read(64)
-        if response:
-            uid = response.hex()
+    def run(self):
+        while not self.stop_evt.is_set():
+            try:
+                with self.lock:
+                    self.ser.write(self.cmd_scan)
 
-            if uid != last_uid:
-                print("📥 read new tag:", uid)
-                last_uid = uid
+                    resp = self.ser.read(16)
 
-                # get UID tag befor get tag
-                ceach_sum = ceachar('0A', 'D2', '03', '40', '01')[-2:]
-                get_uid_tag = bytes.fromhex(f'0A D2 03 40 01 {ceach_sum}')
-                ser.write(get_uid_tag)
-                response_UID = ser.read(64)
-                real_uid = response_UID.hex()[6*2:14*2]
-                print('📥 UID:', real_uid)
-                send_uid_to_server(real_uid, reader="gate-1")
-                # time.sleep(0.03)
+                    if resp and resp.hex() != self.last_frame:
+                        self.last_frame = resp.hex()
 
-                # clear data of buffer befor get UID tag
-                ceach_sum = ceachar('0A', 'D2', '02', '44')[-2:]
-                clear_data = bytes.fromhex(f'0A D2 02 44 {ceach_sum}')
-                ser.write(clear_data)
-            else:
-                print("🔁Duplicate - Previous tag is close.")
-        else:
-            print("⏳No response from the device...")
+                        self.ser.write(self.cmd_uid)
 
-        time.sleep(0.03)
+                        uid_resp = self.ser.read(16)
 
-    except (serial.SerialException, OSError):
-        print('⚠️ Connection lost. Trying to reconnect...')
-        ser.close()
-        ser = None
-        while not ser:
-            ser = connect_to_rfid()
-            if not ser:
-                print('⏳ Reconnecting in 5 seconds...')
+                        uid_hex_full = uid_resp.hex()
+                        if len(uid_hex_full) >= 28:
+                            uid_hex = uid_hex_full[12:28]
+                            if uid_hex:
+                                respons_reque = requests.post(
+                                    "http://127.0.0.1:8000/rfid/read_tag/",
+                                    json={
+                                        'uid': uid_hex,
+                                        "reader_id": self.reader_id
+                                    },
+                                    timeout=3
+                                )
+                                data = respons_reque.json()
+                                print('data response tag :', data)
+                                print(data.get('allowed'))
+                                if data.get('allowed'):
+                                    self.ser.write(self.cmd_active_rellay)
+                                    self.ser.write(self.cmd_deactive_rellay)
+
+                                print(f"✅ [{self.reader_id}] UID:", uid_hex)
+
+                        self.ser.write(self.cmd_clear)
+
+            except Exception as e:
+                print('⚠️ Connection lost. Trying to reconnect...')
+                # self.ser.close()
+                self.ser = None
+                while not self.ser:
+                    ser = connect_to_rfid()
+                    if not self.ser:
+                        # self.ser = ser.port
+                        print('⏳ Reconnecting in 5 seconds...')
+                        time.sleep(1)
+
+                print(f"⚠️ [{self.reader_id}] reconnecting !!! is error : {e}")
                 time.sleep(1)
 
-    except Exception as e:
-        print("❌ error in connections")
-        break
+        print(f"🛑 [{self.reader_id}] stop Thread.")
+
+# =====================================================================
 
 
-# بستن ارتباط
-ser.close()
+# فرض بر این است که
+# ایجاد قفل و رویداد توقف
+lock = Lock()
+stop_event = Event()
 
-print("🏁 end")
+# ایجاد و شروع دو ترد
+reader1 = RfidThread(ser=serial.Serial(ser.port, 9600, timeout=0.1),
+                     lock=lock, addr=210, reader_id='D2', stop_evt=stop_event)
+reader2 = RfidThread(ser=serial.Serial(ser.port, 9600, timeout=0.1), lock=lock,
+                     addr=211, reader_id='D3', stop_evt=stop_event)
 
+reader1.start()
+reader2.start()
+reader1.join()
+reader2.join()
 
-# ports = serial.tools.list_ports.comports()
-
-# for i in ports:
-#     print(i)
+# برای متوقف کردن تردها، می‌توانید از stop_event استفاده کنید
+# به عنوان مثال:
+# time.sleep(10)  # بعد از 10 ثانیه
+# stop_event.set()  # توقف تردها
