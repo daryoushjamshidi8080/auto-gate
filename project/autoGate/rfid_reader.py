@@ -83,6 +83,7 @@ class RfidThread(Thread):
         while not self.stop_evt.is_set():
             try:
                 with self.lock:
+                    time.sleep(0.03)
                     self.ser.write(self.cmd_scan)
 
                     resp = self.ser.read(16)
@@ -138,21 +139,24 @@ class RfidThread(Thread):
 
 # فرض بر این است که
 # ایجاد قفل و رویداد توقف
-lock = Lock()
-stop_event = Event()
 
-# ایجاد و شروع دو ترد
-reader1 = RfidThread(ser=serial.Serial(ser.port, 9600, timeout=0.1),
-                     lock=lock, addr=210, reader_id='D2', stop_evt=stop_event)
-reader2 = RfidThread(ser=serial.Serial(ser.port, 9600, timeout=0.1), lock=lock,
-                     addr=211, reader_id='D3', stop_evt=stop_event)
 
-reader1.start()
-reader2.start()
-reader1.join()
-reader2.join()
+if __name__ == '__main__':
+    print('🏁 start ')
+    # lock = Lock()
+    # stop_event = Event()
+    # # ایجاد و شروع دو ترد
+    # reader1 = RfidThread(ser=serial.Serial('/dev/ttyUSB0', 9600, timeout=0.1),
+    #                      lock=lock, addr=210, reader_id='D2', stop_evt=stop_event)
+    # reader2 = RfidThread(ser=serial.Serial('/dev/ttyUSB0', 9600, timeout=0.1), lock=lock,
+    #                      addr=211, reader_id='D3', stop_evt=stop_event)
 
-# برای متوقف کردن تردها، می‌توانید از stop_event استفاده کنید
+    # reader1.start()
+    # reader2.start()
+    # reader1.join()
+    # reader2.join()
+
+    # برای متوقف کردن تردها، می‌توانید از stop_event استفاده کنید
 # به عنوان مثال:
 # time.sleep(10)  # بعد از 10 ثانیه
 # stop_event.set()  # توقف تردها

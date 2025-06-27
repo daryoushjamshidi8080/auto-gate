@@ -127,6 +127,8 @@
 
 
 # # ports = serial.tools.list_ports.comports()
+# Windsurf Plugin (formerly Codeium): AI Coding Autocomplete and Chat for Python, JavaScript, TypeScript, and more
+# Windsurf: Unable to download language server. If issues persist after restarting your IDE, please contact vscode@windsurf.com. Attempted download URL: https://releases.codeiumdata.com/language-server-v1.48.2/language_server_linux_x64.gz.
 
 # # for i in ports:
 # #     print(i)
