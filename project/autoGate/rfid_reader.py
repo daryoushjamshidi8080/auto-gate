@@ -34,6 +34,8 @@ def connect_to_rfid():
 # connect to rfid
 ser = connect_to_rfid()
 
+print('serisal  :       ser :', ser)
+
 
 def checksum(*bs):
     cmd = []
@@ -63,64 +65,81 @@ def make_cmd(addr, *args):
 
 
 class RfidThread(Thread):
-    def __init__(self, ser: serial.Serial, lock: Lock,  addr: int, reader_id: str, stop_evt: Event):
+    def __init__(self, ser: serial.Serial, lock: Lock, stop_evt: Event, info_reader: dict):
         super().__init__(daemon=True)
 
         self.ser = ser
         self.lock = lock
-        self.addr = addr
-        self.reader_id = reader_id
+        self.info_reader = info_reader
         self.stop_evt = stop_evt
         self.last_frame = None
 
-        self.cmd_scan = make_cmd(addr, 0x03, 0x80, 0x01)
-        self.cmd_uid = make_cmd(addr, 0x03, 0x40, 0x01)
-        self.cmd_clear = make_cmd(addr, 0x02, 0x44)
-        self.cmd_active_rellay = make_cmd(addr, 0x04, 0x2d, 0x02, 0x01)
-        self.cmd_deactive_rellay = make_cmd(addr, 0x04, 0x2d, 0x02, 0x00)
-
     def run(self):
+
+        # while True:
         while not self.stop_evt.is_set():
             try:
                 with self.lock:
-                    time.sleep(0.03)
-                    self.ser.write(self.cmd_scan)
+                    # while True:
+                    print('info reader: ', self.info_reader)
+                    print('88   ')
+                    # time.sleep(5)
+                    print('----')
+                    for info in self.info_reader:
+                        if self.stop_evt.is_set():
+                            break
 
-                    resp = self.ser.read(16)
+                        print(info)
+                        cmd_scan = make_cmd(
+                            info['addr'], 0x03, 0x80, 0x01)
+                        cmd_uid = make_cmd(
+                            info['addr'], 0x03, 0x40, 0x01)
+                        cmd_clear = make_cmd(info['addr'], 0x02, 0x44)
+                        cmd_active_rellay = make_cmd(
+                            info['addr'], 0x04, 0x2d, 0x02, 0x01)
+                        cmd_deactive_rellay = make_cmd(
+                            info['addr'], 0x04, 0x2d, 0x02, 0x00)
 
-                    if resp and resp.hex() != self.last_frame:
-                        self.last_frame = resp.hex()
+                        self.ser.write(cmd_scan)
 
-                        self.ser.write(self.cmd_uid)
+                        resp = self.ser.read(16)
 
-                        uid_resp = self.ser.read(16)
+                        if resp and resp.hex() != self.last_frame:
+                            self.last_frame = resp.hex()
 
-                        uid_hex_full = uid_resp.hex()
-                        if len(uid_hex_full) >= 28:
-                            uid_hex = uid_hex_full[12:28]
-                            if uid_hex:
-                                respons_reque = requests.post(
-                                    "http://127.0.0.1:8000/rfid/read_tag/",
-                                    json={
-                                        'uid': uid_hex,
-                                        "reader_id": self.reader_id
-                                    },
-                                    timeout=3
-                                )
-                                data = respons_reque.json()
-                                print('data response tag :', data)
-                                print(data.get('allowed'))
-                                if data.get('allowed'):
-                                    self.ser.write(self.cmd_active_rellay)
-                                    self.ser.write(self.cmd_deactive_rellay)
+                            self.ser.write(cmd_uid)
 
-                                print(f"✅ [{self.reader_id}] UID:", uid_hex)
+                            uid_resp = self.ser.read(16)
 
-                        self.ser.write(self.cmd_clear)
+                            uid_hex_full = uid_resp.hex()
+                            if len(uid_hex_full) >= 28:
+                                uid_hex = uid_hex_full[12:28]
+                                if uid_hex:
+                                    respons_reque = requests.post(
+                                        "http://127.0.0.1:8000/rfid/read_tag/",
+                                        json={
+                                            'uid': uid_hex,
+                                            "reader_id": info['reader_id']
+                                        },
+                                        timeout=3
+                                    )
+                                    data = respons_reque.json()
+                                    print('data response tag :', data)
+                                    print(data.get('allowed'))
+                                    if data.get('allowed'):
+                                        self.ser.write(cmd_active_rellay)
+                                        self.ser.write(
+                                            cmd_deactive_rellay)
 
+                                    print(
+                                        f"✅ [{info['reader_id']}] UID:", uid_hex)
+
+                            self.ser.write(cmd_clear)
+                            time.sleep(0.03)
+                        # time.sleep(0.03)
             except Exception as e:
-                print('⚠️ Connection lost. Trying to reconnect...')
-                # self.ser.close()
+                print('⚠️ Connection lost. Trying to reconnect... error is :', e)
+                self.ser.close()
                 self.ser = None
                 while not self.ser:
                     ser = connect_to_rfid()
@@ -129,12 +148,9 @@ class RfidThread(Thread):
                         print('⏳ Reconnecting in 5 seconds...')
                         time.sleep(1)
 
-                print(f"⚠️ [{self.reader_id}] reconnecting !!! is error : {e}")
+                print(
+                    f"⚠️ [{self.reader_id}] reconnecting !!! is error : {e}")
                 time.sleep(1)
-
-        print(f"🛑 [{self.reader_id}] stop Thread.")
-
-# =====================================================================
 
 
 # فرض بر این است که
@@ -143,6 +159,20 @@ class RfidThread(Thread):
 
 if __name__ == '__main__':
     print('🏁 start ')
+
+    reader_info = [
+        {'addr': 210, 'reader_id': 'D2', 'port': '/dev/ttyUSB0'},
+        {'addr': 211, 'reader_id': 'D3', 'port': '/dev/ttyUSB0'},
+    ]
+
+    rfid_handler = RfidThread(
+        ser=serial.Serial('/dev/ttyUSB0', 9600, timeout=0.1),
+        lock=Lock(), stop_evt=Event(), info_reader=reader_info)
+
+    rfid_handler.start()
+
+    rfid_handler.join()
+
     # lock = Lock()
     # stop_event = Event()
     # # ایجاد و شروع دو ترد

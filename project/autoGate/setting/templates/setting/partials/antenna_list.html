@@ -32,7 +32,7 @@
                     </td>
                     <td class="d-flex">
                         <button class="btn btn-sm btn-success me-1 update-antenna" data-id="{{ antenna.id }}">ویرایش</button>
-                        <button class="btn btn-sm btn-danger delete-antenna" data-id="{{ antenna.id }}">حذف</button>
+                        <button class="btn btn-sm btn-danger delete-antenna" data-name="{{ antenna.name}}" data-adder="{{ antenna.number }}" data-id="{{ antenna.id }}">حذف</button>
                     </td>
                 </tr>
                 {% empty %}

@@ -9,6 +9,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from .models import AnonymousTag
 from rfid_manager import rfid_manager
+from setting.models import antennas
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -16,12 +17,12 @@ class StopThread(View):
     def post(self, request):
         try:
             print('Stop Thread ================================================')
-            print('stop tread')
-            # return JsonResponse({'success': True, 'status': 200})
+
             data = json.loads(request.body)
 
-            reader_id = data.get('reader_id')
-            adder = data.get('adder')
+            reader_id = data.get('antennaName')
+            adder = data.get('antennaAdder')
+
             rfid_manager.stop_tread(reader_id, adder)
             return JsonResponse({'success': True, 'status': 200}, status=200)
         except Exception as e:
@@ -31,12 +32,36 @@ class StopThread(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class StartThread(View):
     def post(self, request):
-        print('hi start thread ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-        # return JsonResponse({'success': True, 'status': 200})
-        data = json.loads(request.body)
-        readers_info = data.get('readers', [])
-        rfid_manager.start_readers(readers_info)
-        return JsonResponse({'success': True, 'status': 200, 'readers': readers_info, 'count': len(readers_info)}, status=200)
+        try:
+            antenna = antennas.objects.all()
+
+            info_reader = []
+            for info in antenna:
+                info_dict = dict()
+                info_dict['addr'] = info.number
+                info_dict['reader_id'] = info.name
+
+                info_reader.append(info_dict)
+
+            rfid_manager.start_readers(info_reader)
+            return JsonResponse(
+                {
+                    'success': True,
+                    'status': 200,
+                    'readers': info_reader,
+                    'count': len(info_reader)
+                },
+                status=200
+            )
+        except Exception as e:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': str(e),
+                    'status': 500
+                },
+                status=500
+            )
 
 
 @method_decorator(csrf_exempt, name='dispatch')
