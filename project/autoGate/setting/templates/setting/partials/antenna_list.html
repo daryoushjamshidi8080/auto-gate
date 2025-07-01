@@ -28,7 +28,7 @@
                     <td>{{ antenna.number }}</td>
                     <td>{{ antenna.open_time }}</td>
                     <td style="color: rgb(30, 255, 0);">
-                        {% if antenna.is_active %} online{% else %} <span style="color: black !important;" >offline</span>{% endif %}
+                        {% if antenna.status  == 'Online' %} online {% else %} <span style="color: black !important;" >Offline</span>{% endif %}
                     </td>
                     <td class="d-flex">
                         <button class="btn btn-sm btn-success me-1 update-antenna" data-id="{{ antenna.id }}">ویرایش</button>

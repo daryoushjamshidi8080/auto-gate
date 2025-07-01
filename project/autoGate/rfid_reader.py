@@ -15,11 +15,13 @@ ALLOWED_DEVICES = [
 
 
 def connect_to_rfid():
+    print('✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ man shoroo be kar kadam')
     ports = serial.tools.list_ports.comports()
 
     for port in ports:
         vid = format(port.vid, '04x') if port.vid else ''
         pid = format(port.pid, '04x') if port.pid else ''
+        # print('vid : ', vid, '  /  pid : ', pid)
 
         if (vid, pid) in ALLOWED_DEVICES:
             try:
@@ -60,7 +62,7 @@ def make_cmd(addr, *args):
     check_sum = checksum(*cmd)
 
     cmd_str += check_sum[2:]
-    print(cmd_str)
+    # print(cmd_str)
     return bytes.fromhex(cmd_str)
 
 
@@ -73,23 +75,18 @@ class RfidThread(Thread):
         self.info_reader = info_reader
         self.stop_evt = stop_evt
         self.last_frame = None
+        self.status_rfid = dict()
 
     def run(self):
 
-        # while True:
         while not self.stop_evt.is_set():
             try:
                 with self.lock:
-                    # while True:
-                    print('info reader: ', self.info_reader)
-                    print('88   ')
-                    # time.sleep(5)
-                    print('----')
+                    print(self.info_reader)
                     for info in self.info_reader:
                         if self.stop_evt.is_set():
                             break
 
-                        print(info)
                         cmd_scan = make_cmd(
                             info['addr'], 0x03, 0x80, 0x01)
                         cmd_uid = make_cmd(
@@ -103,6 +100,23 @@ class RfidThread(Thread):
                         self.ser.write(cmd_scan)
 
                         resp = self.ser.read(16)
+                        # print(
+                        #     f'name : {info["reader_id"]},,,,,,, reponse ::::::::::::: ',  len(resp))
+                        status = 'Online' if len(resp) >= 6 and len(
+                            resp) != 9 else 'Offline'
+                        # print(
+                        #     f'reader name : {info["reader_id"]} """""""""""  { status } ')
+
+                        if self.status_rfid.get(info['reader_id']) is None or self.status_rfid.get(info['reader_id']) != status:
+                            self.status_rfid[info['reader_id']] = status
+                            print('ok')
+
+                            requests.post('http://127.0.0.1:8000/rfid/update_status/',
+                                          json={
+                                              "reader_id": info['reader_id'],
+                                              "status": status
+                                          }
+                                          )
 
                         if resp and resp.hex() != self.last_frame:
                             self.last_frame = resp.hex()
@@ -136,20 +150,39 @@ class RfidThread(Thread):
 
                             self.ser.write(cmd_clear)
                             time.sleep(0.03)
-                        # time.sleep(0.03)
+
+                    time.sleep(0.03)
             except Exception as e:
+                status = 'Offline'
+                for info in self.info_reader:
+                    if self.status_rfid.get(info['reader_id']) is None or self.status_rfid.get(info['reader_id']) != status:
+                        self.status_rfid[info['reader_id']] = 'Offline'
+                        print('ok')
+
+                        requests.post('http://127.0.0.1:8000/rfid/update_status/',
+                                      json={
+                                          "reader_id": info['reader_id'],
+                                          "status": 'Offline'
+                                      }
+                                      )
+
                 print('⚠️ Connection lost. Trying to reconnect... error is :', e)
                 self.ser.close()
                 self.ser = None
                 while not self.ser:
-                    ser = connect_to_rfid()
                     if not self.ser:
-                        # self.ser = ser.port
-                        print('⏳ Reconnecting in 5 seconds...')
-                        time.sleep(1)
+                        try:
+                            print('hey')
+                            ser = connect_to_rfid()
+                            self.ser = serial.Serial(
+                                ser.port, 9600, timeout=0.1)
+                        except:
+                            # self.ser = ser.port
+                            print('⏳ Reconnecting in 5 seconds...')
+                    time.sleep(1)
 
                 print(
-                    f"⚠️ [{self.reader_id}] reconnecting !!! is error : {e}")
+                    f"⚠️ [reconnecting !!! is error : {e}")
                 time.sleep(1)
 
 

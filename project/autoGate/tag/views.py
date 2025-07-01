@@ -70,7 +70,6 @@ class DeleteTagView(LoginRequiredMixin, View):
 
         tag.delete()
         tags = Tag.objects.all()
-        print('=================================================================================== ')
         print('tags :', tags)
         html = render_to_string('tag/partials/list_tag.html',
                                 {'tags': tags}, request=request)

@@ -107,3 +107,23 @@ class ReadTag(View):
             )
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e), 'status': 400})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdateStatus(View):
+    def post(self, request):
+        try:
+            print('hi')
+            payload = json.loads(request.body.decode('utf-8'))
+            print(payload)
+            reader_id = payload.get('reader_id')
+            status = payload.get('status')
+
+            antenna = antennas.objects.get(name=reader_id)
+            antenna.status = status
+            antenna.save()
+
+            return JsonResponse({'success': True, 'status': 200}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e), 'status': 400})

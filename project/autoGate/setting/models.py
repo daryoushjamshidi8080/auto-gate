@@ -6,12 +6,9 @@ from django.db import models
 class antennas(models.Model):
     number = models.BigIntegerField(unique=True)
     name = models.CharField(max_length=255)
+    status = models.CharField(max_length=50, default='Offline')
     open_time = models.IntegerField(default=30)
-    is_active = models.BooleanField(default=True) 
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{ self.name } (#{ self.number })'
-    
-    
-
-

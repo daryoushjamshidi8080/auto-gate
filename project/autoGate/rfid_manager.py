@@ -3,6 +3,35 @@ from threading import Thread, Lock, Event
 import serial
 
 
+# list IDs of Arfid device
+ALLOWED_DEVICES = [
+    ('1a86', '7523')
+]
+
+
+def connect_to_rfid():
+    # print('✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ man shoroo be kar kadam')
+    ports = serial.tools.list_ports.comports()
+
+    for port in ports:
+        vid = format(port.vid, '04x') if port.vid else ''
+        pid = format(port.pid, '04x') if port.pid else ''
+        # print('vid : ', vid, '  /  pid : ', pid)
+
+        if (vid, pid) in ALLOWED_DEVICES:
+            try:
+                ser = serial.Serial(port.device, 9600, timeout=1)
+                print(f"✅ connected to RFID: {port.device}")
+                return ser
+            except serial.SerialException:
+                print(f"❌ error in connections : {port.device}: ")
+    return None
+
+
+# connect to rfid
+ser = connect_to_rfid()
+
+
 class RfidManager:
     def __init__(self):
         self.lock = Lock()
@@ -26,9 +55,8 @@ class RfidManager:
 
         self.info_thread = reader_info
         stop_event = Event()
-
-        ser = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.09)
-        print('serial : ', ser)
+        ser = connect_to_rfid()
+        ser = serial.Serial(ser.port, 9600, timeout=0.1)
         thread = RfidThread(
             ser=ser,
             lock=self.lock,
