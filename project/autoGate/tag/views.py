@@ -7,6 +7,8 @@ from .models import Tag
 from django.template.loader import render_to_string
 from .forms import TagForm
 from rfid.models import AnonymousTag
+from django.core.paginator import Paginator
+
 
 # Create your views here.
 
@@ -42,18 +44,32 @@ class AddTagView(LoginRequiredMixin, View):
 
 class TagAnonymous(LoginRequiredMixin, View):
     def get(self, request):
-        anonymous_tag = AnonymousTag.objects.all()
+        page_number = request.GET.get('page', 1)
+        anonymous_tag_all = AnonymousTag.objects.all().order_by('-create_at')
+
+        paginator = Paginator(anonymous_tag_all, 10)
+        page_obj = paginator.get_page(page_number)
+
         tags = Tag.objects.all()
-        tag_list = []
-        for tag in tags:
-            tag_list.append(tag.uid)
+        tag_list = [tag.uid for tag in tags]
 
-        print(tag_list)
+        html = render_to_string(
+            'tag/partials/list_anonymous_tag.html',
+            {
+                'tagAnonymous': page_obj,
+                'tag_list': tag_list,
+                'page_obj': page_obj
+            },
+            request=request
+        )
 
-        html = render_to_string('tag/partials/list_anonymous_tag.html',
-                                {'tagAnonymous': anonymous_tag, 'tag_list': tag_list}, request=request)
-
-        return JsonResponse({"html": html})
+        return JsonResponse(
+            {
+                "html": html,
+                'status': 200,
+            },
+            status=200
+        )
 
     def post(self, request):
         pass
@@ -71,6 +87,6 @@ class DeleteTagView(LoginRequiredMixin, View):
         tag.delete()
         tags = Tag.objects.all()
         print('tags :', tags)
-        html = render_to_string('tag/partials/list_tag.html',
-                                {'tags': tags}, request=request)
+        html = render_to_string(
+            'tag/partials/list_tag.html', {'tags': tags}, request=request)
         return JsonResponse({'html': html, 'status': 200}, status=200)

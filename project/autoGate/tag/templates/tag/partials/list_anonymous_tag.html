@@ -11,6 +11,7 @@
                     <tr>
                         <th scope="col">شماره تک</th>
                         <th scope="col">زمان ثبت </th>
+                        <th scope="col"> آنتن </th>
                         <th scope="col">عملیات</th>
                     </tr>
                 </thead>
@@ -20,12 +21,15 @@
                             {% if tag.uid_anonymousTag in tag_list%}
                                 <td style="background-color: rgb(30, 255, 0);">{{ tag.uid_anonymousTag }}</td>
                                 <td style="background-color: rgb(30, 255, 0);" >{{ tag.create_at }}</td>
+                                <td style="background-color: rgb(30, 255, 0);">{{ tag.antenna }}</td>
                                 <td class="d-flex justify-content-center">
                                     <button class="btn btn-sm btn-success me-1 update-antenna" disabled>افزودن</button>
                                 </td>
+                                
                             {% else %}
                                 <td id="uid_tag" style="background-color: rgb(240, 17, 17);">{{ tag.uid_anonymousTag }}</td>
                                 <td style="background-color: rgb(240, 17, 17);">{{ tag.create_at }}</td>
+                                <td style="background-color: rgb(240, 17, 17);">{{ tag.antenna }}</td>
 
                                 <td class="d-flex justify-content-center">
                                     <button class="btn btn-sm btn-success me-1 add-new-tag" data-bs-toggle="modal" data-bs-target="#createNewTagModal" data-id="{{ tag.id }}">افزودن</button>
@@ -44,3 +48,23 @@
         </div>
     </div>
 </div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-3">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a  data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.previous_page_number }}" class="page-link pagination-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
+        </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a  data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.next_page_number }}" class="page-link pagination-link" href="?page={{ page_obj.next_page_number }}">بعدی</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>

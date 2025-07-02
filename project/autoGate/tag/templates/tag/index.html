@@ -47,15 +47,20 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 
+    let selectedTagId = null;
+
     document.addEventListener('DOMContentLoaded', function () {
         const anonymousTag = document.getElementById('anonymous_tag');
         const carListDev = document.getElementById('carList');
         const modalCreateCar = document.getElementById('createNewTagModal');
         const modalBody = document.getElementById('car-modal-body');
         const form = document.getElementById('carCreateForm');
+        
 
             // const carList = document.getElementById('carList')
 
+        // const url = e.target.getAttribute('data-url');
+        // console.log(url)
         
         function loadAnonymousTag() {
             fetch('{% url "tag:tag-anonymous" %}')
@@ -92,7 +97,7 @@
 
 
                 const tagId = e.target.dataset.id
-                // console.log()
+
                 fetch(`/tag/delete-tag/${tagId}/`, {
                     method: 'post',
                     headers: {
@@ -168,12 +173,49 @@
                 });
         });
 
+
+        anonymousTag.addEventListener('click', function (e) {
+            if (e.target.classList.contains('pagination-link')) {
+                // console.log('hi')
+                e.preventDefault();
+                const url = e.target.getAttribute('data-url')
+                selectedTagId = url
+                console.log(url)
+
+                fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    anonymousTag.innerHTML = data.html
+                })
+            }
+        });
+
     });
 
 
+    function getCurrentPageNumber(){
+        const urlParams = new URLSearchParams(window.location.search)
+        console.log(urlParams)
+        return parseInt(urlParams.get("page")) || 1
+    }
 
+    
     setInterval(()=>{
-        window.loadAnonymousTag()
+
+        if(selectedTagId === null){
+            window.loadAnonymousTag()
+            console.log('regresh')
+        }else{
+            
+            const pageStr = selectedTagId.split('?')[1].split('=')[1]
+            const pageNum = parseInt(pageStr);
+
+            if(pageNum === 1){
+                console.log('regresh')
+                window.loadAnonymousTag()
+            }
+        }
+        
     }, 2000)
 
 

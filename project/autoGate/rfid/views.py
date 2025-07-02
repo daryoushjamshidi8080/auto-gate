@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from .models import AnonymousTag
 from rfid_manager import rfid_manager
 from setting.models import antennas
+from tag.models import TagPermission
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -78,22 +79,58 @@ class ReadTag(View):
             if not uid:
                 raise ValueError('uid field is required')
 
-            print('uid :', uid)
+            # print('uid :', uid)
 
-            tag = Tag.objects.filter(uid=uid).first()
-            found = tag is not None
+            # print('**/****************************************************************')
 
-            permission_ok = False
+            try:
 
-            if found:
-                permission_ok = True
-                print('tag found', tag.rule)
+                tag = Tag.objects.filter(uid=uid).first()
+                antenna = antennas.objects.get(name=reader_id)
 
-            AnonymousTag.objects.create(uid_anonymousTag=uid)
-            tags = AnonymousTag.objects.all()
-            if tags.count() > 10:
-                extra = tags.count() - 10
-                for i in tags[:extra]:
+                permission = tag.rule
+
+                found = tag is not None
+
+                permission_ok = None
+
+                # print('0000000000000000000000000000000000000000000000')
+                # print('permission :', permission.antenna.all())
+                # for i in permission.antenna.all():
+                #     print(i)
+
+                # # print()
+                if tag and tag.is_active:
+                    if permission.antenna.filter(id=antenna.id).exists():
+                        permission_ok = True
+                    else:
+                        permission_ok = False
+
+            except Exception as e:
+                print('⛓️‍💥 ⛓️‍💥not found tag -> Exception:', str(e))
+                permission_ok = False
+
+            print('**/****************************************************************')
+            print(
+                '======================================================================')
+
+            # if permission.antenna.exists() and antenna in permission.antenna.all():
+            #     permission_ok = True
+            # elif not permission.antenna.exists():
+            #     permission_ok = False
+            # else:
+            #     permission_ok = False
+
+            # if found:
+            #     # permission_ok = True
+            #     print('tag found', tag.rule)
+
+            AnonymousTag.objects.create(
+                uid_anonymousTag=uid, antenna=reader_id)
+            tags_anonymous = AnonymousTag.objects.all()
+            if tags_anonymous.count() > 400:
+                extra = tags_anonymous.count() - 400
+                for i in tags_anonymous[:extra]:
                     print(i.id)
                     i.delete()
 

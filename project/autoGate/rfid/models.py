@@ -5,6 +5,7 @@ from django.db import models
 
 class AnonymousTag(models.Model):
     uid_anonymousTag = models.CharField(max_length=255)
+    antenna = models.CharField(max_length=255)
     create_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
