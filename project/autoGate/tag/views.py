@@ -20,10 +20,27 @@ class TagView(LoginRequiredMixin, View):
 
 class ListTagView(LoginRequiredMixin, View):
     def get(self, request):
-        tags = Tag.objects.all()
+        page_number = request.GET.get('page', 1)
+        tags = Tag.objects.all().order_by('-create_at')
+
+        paginator = Paginator(tags, 10)
+        page_obj = paginator.get_page(page_number)
+
         html = render_to_string(
-            "tag/partials/list_tag.html", {"tags": tags}, request=request)
-        return JsonResponse({"html": html})
+            "tag/partials/list_tag.html",
+            {
+                "tags": page_obj,
+                'page_obj': page_obj
+            },
+            request=request
+        )
+        return JsonResponse(
+            {
+                "html": html,
+                'status': 200
+            },
+            status=200
+        )
 
 
 class AddTagView(LoginRequiredMixin, View):

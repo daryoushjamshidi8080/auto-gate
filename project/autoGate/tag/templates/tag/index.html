@@ -173,6 +173,20 @@
                 });
         });
 
+        carListDev.addEventListener('click', function (e) {
+            if(e.target.classList.contains('pagination-link')){
+                e.preventDefault();
+                
+                const url = e.target.getAttribute('data-url')
+                fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data)
+                    carListDev.innerHTML = data.html
+                })
+
+            }
+        })
 
         anonymousTag.addEventListener('click', function (e) {
             if (e.target.classList.contains('pagination-link')) {

@@ -23,6 +23,7 @@ class Tag(models.Model):
     rule = models.ForeignKey(
         TagPermission, on_delete=models.CASCADE, related_name="tags_permissions")
     is_active = models.BooleanField(default=True)
+    create_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.owner_name } ({self.uid})'
