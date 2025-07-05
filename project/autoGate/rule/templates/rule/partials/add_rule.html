@@ -1,0 +1,21 @@
+<div class="mb-3">
+    {{ form.permission_name.label_tag }}
+    {{ form.permission_name }}
+    {% for error in form.permission_name.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.antenna.label_tag }}
+    {{ form.antenna }}
+    {% for error in form.antenna.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.is_active.label_tag }}
+    {{ form.is_active }}
+    {% for error in form.is_active.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>  

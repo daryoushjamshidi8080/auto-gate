@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %} قوانین {% endblock %}
+
+{% block content %}
+
+<div class="">
+    <div id="rule-list">
+        <!-- loadAntennaList() -->
+    </div>
+
+    <div class="modal fade" id="createNewTagModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="createNewRul" method="post">
+                    {% csrf_token %}
+    
+                    <div class="modal-header">
+                        <h5 class="modal-title">ایجاد قانون</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+    
+                    <div class="modal-body" id="car-modal-body">
+                        <!-- loded by ajax -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">ثبت</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+    </div>
+
+    <div class="modal fade" id="UpdateTagModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="UpdateRule" method="post">
+                    {% csrf_token %}
+    
+                    <div class="modal-header">
+                        <h5 class="modal-title">ایجاد قانون</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+    
+                    <div class="modal-body" id="update-tag-modal-body">
+                        <!-- loded by ajax -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">ثبت</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+    </div>
+</div>
+
+{% endblock %}
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function()
+    {
+        const ruleList = document.getElementById('rule-list')
+        const createNewRuleModal = document.getElementById('createNewTagModal')
+        const createNewRuleForm = document.getElementById('createNewRul')
+        const ruleModalBody = document.getElementById('car-modal-body')
+        
+        const updateRuleModal = document.getElementById('UpdateTagModal')
+        const updateRuleForm = document.getElementById('UpdateRule')
+        const updateRuleModalBody = document.getElementById('update-tag-modal-body')
+
+        let ruleId = null
+        updateRuleModal.addEventListener('show.bs.modal', function(e)
+        {
+            ruleId = e.relatedTarget.getAttribute('data-id')
+            
+            fetch(`/rule/update-rule/${ruleId}/`)
+            .then(res => res.json())
+            .then(data => 
+            {
+                if(data.status === 200)
+                {
+                    updateRuleModalBody.innerHTML = data.html;
+                }
+                else
+                {
+                    updateRuleModalBody.innerHTML = '<p> مشکل در بار گزاری قوانین </p>'
+                }
+            }).catch(err =>
+            {
+                console.error('error is loads rule : ', err)
+            })  
+        })
+
+        updateRuleForm.addEventListener('submit', function(e)
+        {
+            e.preventDefault()
+            const formData = new FormData(updateRuleForm)
+            fetch(`/rule/update-rule/${ruleId}/`, 
+            {
+                method:'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => 
+            {
+                if(data.status === 200)
+                {
+                    const bsModal = bootstrap.Modal.getInstance(updateRuleModal);
+                    bsModal.hide();
+                    updateRuleForm.reset();
+                    alert('قانون با موفقیت ویرایش شد')
+                    loadRuleList()
+                }
+                else
+                {
+                    updateRuleModalBody.innerHTML = data.html;
+                }
+            }).catch(err => 
+            {
+                console.error('error in update rule: ', err)
+            })
+
+            
+
+        })
+
+        createNewRuleModal.addEventListener('show.bs.modal', function(e)
+        {
+            fetch('/rule/create-rule/')
+            .then(res => res.json())
+            .then(data => 
+            {
+                if(data.status === 200)
+                {
+                    ruleModalBody.innerHTML = data.html;
+                }
+                else
+                {
+                    ruleModalBody.innerHTML = '<p> مشکل در بار گزاری قوانین </p>'
+                }
+            }).catch(err => 
+            {
+                console.error('error is loads rule : ', err)
+            })
+        })
+        
+        createNewRuleForm.addEventListener('submit', function(e)
+        {
+            e.preventDefault()
+            
+            const formData = new FormData(createNewRuleForm)
+            fetch('/rule/create-rule/', 
+            {
+                method:'POST',
+                body: formData                
+            })
+            .then(res => res.json())
+            .then(data => 
+            {
+                if(data.status === 200)
+                {
+                    const bsModal = bootstrap.Modal.getInstance(createNewRuleModal);
+                    bsModal.hide();
+                    createNewRuleForm.reset();
+                    alert('قانون با موفقیت ایجاد شد')
+                    loadRuleList()
+                }
+                else
+                {
+                    ruleModalBody.innerHTML = data.html;
+                }
+            }).catch(err => 
+            {
+                console.error('error in create rule: ', err)
+            })
+        })
+
+        ruleList.addEventListener('click', function(e)
+        {
+            if(e.target.classList.contains('delete-rule'))
+            {   
+                console.log('hi')
+                const ruleId = e.target.dataset.id
+                fetch(`/rule/delete-rule/`,
+                {
+                    method:'POST',
+                    headers: 
+                    {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body:JSON.stringify({'id':ruleId})
+                })
+                .then(res => res.json())
+                .then(data => 
+                {
+                    if(data.status === 200){
+                        alert('باموفقیت حذف شد')
+                        loadRuleList()
+                    }
+                }).catch(err => {
+                    console.error('error in delete rule: ', err)
+                })
+            }
+        })
+
+
+        function loadRuleList()
+        {
+            fetch('/rule/show-list-rule/')
+            .then(res => res.json())
+            .then(data => 
+            {
+                if(data.status === 200)
+                {
+                    ruleList.innerHTML = data.html
+                }
+                else
+                {
+                    ruleList.innerHTML = '<p> مشکل در بار گزاری لیست قوانین </p>'
+                }
+            }).catch(err => 
+            {
+                console.error('error is loads rule : ', err)
+            })
+        }
+
+        loadRuleList()
+        window.loadRuleList = loadRuleList
+
+
+
+
+    })
+
+</script>
+{% endblock %}

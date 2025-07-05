@@ -1,0 +1,55 @@
+<div class="container-fluid px-4">
+    <div class="container-fluid bg-white p-4 rounded shadow" >
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">درب ها</h5>
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createNewTagModal">
+                    ایجاد قانون جدید
+                </button>
+            </div>
+        </div>
+
+        <table class="table table-bordered table-striped text-center align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">اسم قانون</th>
+                    <th scope="col">آنتن</th>
+                    <th scope="col">وضعیت</th>
+                    <th scope="col">عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rule in rules %}
+                <tr>
+                    <td>{{ rule.permission_name }}</td>
+                    <td>
+                        {% if rule.antenna.all|length == 0 %}
+                            آنتنی وجود ندارد
+                        {% else %}
+                            {% for antenna in rule.antenna.all %}
+                                {{ antenna.name }}{% if not forloop.last %}, {% endif %}
+                                
+                            {% empty %}
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td style="color: rgb(30, 255, 0);">
+                        {% if rule.is_active == True %} online {% else %} <span
+                            style="color: black !important;">Offline</span>{% endif %}
+                    </td>
+                    <td class="d-flex justify-content-center">
+                        <button data-bs-target="#UpdateTagModal" data-bs-toggle="modal" class="btn btn-sm btn-success me-1 update-rule"
+                            data-id="{{ rule.id }}">ویرایش</button>
+                        <button class="btn btn-sm btn-danger delete-rule" data-name="{{ antenna.name}}"
+                            data-id="{{ rule.id }}">حذف</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">هیچ قانونی یافت نشد.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

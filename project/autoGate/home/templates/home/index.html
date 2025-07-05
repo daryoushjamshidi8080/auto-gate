@@ -5,5 +5,35 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Home</h1>
+    <div class="">
+        <div class="car_list" id="tagList">
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tagList = document.getElementById('tagList')
+        function loadCarList() {
+            fetch('/sowh-log-home/')
+                .then(res => res.json())
+                .then(data => {
+                    tagList.innerHTML = data.html;
+                }).catch(err => {
+                    tagList.innerHTML = "<p>❌ خطا در بارگذاری لیست خودروها</p>";
+                    console.error("Error loading car list:", err);
+                });
+        }
+
+        loadCarList();
+        window.loadCarList = loadCarList;
+    })
+
+    setInterval(() => {
+        window.loadCarList()
+    }, 2000)
+</script>
 {% endblock %}

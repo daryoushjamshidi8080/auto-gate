@@ -1,26 +1,35 @@
 from django.shortcuts import render
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.core.paginator import Paginator
-from logs.models import Logs
+from .models import Logs
 
 
-class home(LoginRequiredMixin, View):
+# Create your views here.
+
+
+class LogsView(View):
     def get(self, request):
-        return render(request, "home/index.html")
+        return render(request, 'logs/index.html')
 
 
-class ShowLogsHomeView(View):
+class ShowLogsView(View):
     def get(self, request):
         try:
-            logs = Logs.objects.all().order_by('-create_at')[:25]
+            page_number = request.GET.get('page', 1)
+            logs = Logs.objects.order_by('-create_at')
+            paginator = Paginator(logs, 25)
+            page_obj = paginator.get_page(page_number)
 
             html = render_to_string(
-                'home/partials/logs_list.html',
+                'logs/partials/logs_list.html',
                 {
-                    'logs': logs,
+                    'logs': page_obj,
+                    'page_obj': page_obj
                 },
                 request=request
             )

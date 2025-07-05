@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "setting.apps.SettingConfig",
     "tag.apps.TagConfig",
     "rfid.apps.RfidConfig",
+    'logs.apps.LogsConfig',
+    'rule.apps.RuleConfig'
 ]
 
 MIDDLEWARE = [

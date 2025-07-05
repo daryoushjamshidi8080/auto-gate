@@ -13,6 +13,27 @@
     {% endfor %}
 </div>
 <div class="mb-3">
+    {{ form.car_name.label_tag }}
+    {{ form.car_name }}
+    {% for error in form.car_name.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.pelicula.label_tag }}
+    {{ form.pelicula }}
+    {% for error in form.pelicula.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
+    {{ form.number_unit.label_tag }}
+    {{ form.number_unit }}
+    {% for error in form.number_unit.errors %}
+    <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+<div class="mb-3">
     {{ form.rule.label_tag }}
     {{ form.rule }}
     {% for error in form.rule.errors %}

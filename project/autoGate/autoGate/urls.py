@@ -24,4 +24,6 @@ urlpatterns = [
     path("setting/", include("setting.urls", namespace="setting")),
     path('tag/', include('tag.urls', namespace='tag')),
     path('rfid/', include('rfid.urls', namespace='rfid')),
+    path('logs/', include('logs.urls', namespace='logs')),
+    path('rule/', include('rule.urls', namespace='rule'))
 ]

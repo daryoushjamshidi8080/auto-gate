@@ -199,7 +199,7 @@ if __name__ == '__main__':
     ]
 
     rfid_handler = RfidThread(
-        ser=serial.Serial('/dev/ttyUSB0', 9600, timeout=0.1),
+        ser=serial.Serial('/dev/ttyUSB1', 9600, timeout=0.1),
         lock=Lock(), stop_evt=Event(), info_reader=reader_info)
 
     rfid_handler.start()

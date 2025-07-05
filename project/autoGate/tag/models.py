@@ -20,9 +20,12 @@ class TagPermission(models.Model):
 class Tag(models.Model):
     uid = models.CharField(max_length=64, unique=True)
     owner_name = models.CharField(max_length=64)
+    car_name = models.CharField(max_length=255, blank=True, null=True)
+    pelicula = models.CharField(max_length=255, blank=True, null=True)
+    number_unit = models.CharField(max_length=255, blank=True, null=True)
     rule = models.ForeignKey(
         TagPermission, on_delete=models.CASCADE, related_name="tags_permissions")
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     create_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
