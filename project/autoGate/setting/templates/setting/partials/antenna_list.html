@@ -31,7 +31,7 @@
                         {% if antenna.status  == 'Online' %} online {% else %} <span style="color: black !important;" >Offline</span>{% endif %}
                     </td>
                     <td class="d-flex">
-                        <button class="btn btn-sm btn-success me-1 update-antenna" data-id="{{ antenna.id }}">ویرایش</button>
+                        <button data-bs-target="#updateAntennaModal" data-bs-toggle="modal" class="btn btn-sm btn-success me-1 update-antenna" data-id="{{ antenna.id }}">ویرایش</button>
                         <button class="btn btn-sm btn-danger delete-antenna" data-name="{{ antenna.name}}" data-adder="{{ antenna.number }}" data-id="{{ antenna.id }}">حذف</button>
                     </td>
                 </tr>

@@ -58,7 +58,7 @@ class CreateRuleView(LoginRequiredMixin, View):
 class UpdateRuleView(LoginRequiredMixin, View):
     def get(self, request, rule_id):
         try:
-            print('rule id : ', rule_id)
+            # print('rule id : ', rule_id)
             rule = TagPermission.objects.get(pk=rule_id)
 
             form = TagPermissionFrom(instance=rule)

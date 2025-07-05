@@ -65,6 +65,27 @@
 </div>
 
 
+<div class="modal fade" id="updateAntennaModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="UpdateAntennaForm" method="post">
+        {% csrf_token %}
+
+        <div class="modal-header">
+          <h5 class="modal-title">ایجاد آنتن</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="antenna-update-modal-body">
+          <!-- اینجا با Ajax فرم لود میشه -->
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">ثبت</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 
   
 {% endblock %}  
@@ -78,6 +99,52 @@ document.addEventListener('DOMContentLoaded', function () {
   const modal = document.getElementById('createAntennaModal');
   const modalBody = document.getElementById('antenna-modal-body');
   const form = document.getElementById('antennaCreateForm');
+
+
+  const updateAntennaModal = document.getElementById('updateAntennaModal');
+  const updateModalBody = document.getElementById('antenna-update-modal-body');
+  const updateForm = document.getElementById('UpdateAntennaForm');
+
+  antennaId = null;
+  updateAntennaModal.addEventListener('show.bs.modal', function (e) {
+    antennaId = e.relatedTarget.getAttribute('data-id');
+    
+    fetch(`/setting/update-antenna/${antennaId}/`)
+      .then(res => res.json())
+      .then(data => {
+        updateModalBody.innerHTML = data.form_html;
+      }).catch(err => {
+        updateModalBody.innerHTML = "<p>❌ خطا در بارگذاری فرم</p>";
+        console.error("Error loading form:", err);
+      })
+  })
+
+  updateForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    formData = new FormData(updateForm);
+    fetch(`/setting/update-antenna/${antennaId}/`, {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 200) {
+          bsModal = bootstrap.Modal.getInstance(updateAntennaModal);
+          bsModal.hide();
+          updateForm.reset();
+          alert("✅ آنتن با موفقیت ویرایش شد!");
+          loadAntennaList();
+
+        }else{
+          alert("❌ خطا در ویرایش انتن");
+          loadAntennaList()
+        }
+      }).catch(err => {
+        updateModalBody.innerHTML = "<p>❌ خطا در بارگذاری فرم</p>";
+        console.error("Error loading form:", err);
+      })
+  })
+
 
 
 
@@ -252,7 +319,8 @@ document.addEventListener('click', function (e) {
       })
     }
   }
-  if (e.target.classList.contains('delete-antenna')) {
+  if (e.target.classList.contains('delete-antenna')) 
+  {
     const antennaId = e.target.getAttribute('data-id');
     const antennaAdder = e.target.getAttribute('data-adder')
     const antennaName = e.target.getAttribute('data-name')
@@ -260,7 +328,8 @@ document.addEventListener('click', function (e) {
 
 
 
-    if (confirm("آیا مطمئن هستید که می‌خواهید این آنتن را حذف کنید؟")) {
+    if (confirm("آیا مطمئن هستید که می‌خواهید این آنتن را حذف کنید؟")) 
+    {
       fetch(`/setting/delete-antenna/${antennaId}/`, {
         method: 'POST',
         headers: {
@@ -300,27 +369,6 @@ document.addEventListener('click', function (e) {
           }
         });
     }
-  }
-  if (e.target.classList.contains('update-antenna')) {
-    const antennaId = e.target.getAttribute('data-id');
-    const modal = document.getElementById('createAntennaModal');
-    const form = document.getElementById('antennaCreateForm');
-    const modalBody = document.getElementById('antenna-modal-body');
-
-
-    fetch(`/setting/update-antenna/${antennaId}/`, {
-      method: 'GET',
-    })
-    
-      .then(res => res.json())
-      .then(data => {
-        modalBody.innerHTML = data.form_html;
-        console.log(data.form_html);
-        const bsModal = new bootstrap.Modal(modal); 
-        bsModal.show();
-        
-      });
-
   }
 });
 
