@@ -107,3 +107,27 @@ class DeleteTagView(LoginRequiredMixin, View):
         html = render_to_string(
             'tag/partials/list_tag.html', {'tags': tags}, request=request)
         return JsonResponse({'html': html, 'status': 200}, status=200)
+
+
+class UpdateTagView(LoginRequiredMixin, View):
+    def get(self, request, tag_id):
+        try:
+            tag = Tag.objects.get(pk=tag_id)
+            form = TagForm(instance=tag)
+            html = render_to_string(
+                'tag/partials/add_tag.html', {'form': form}, request=request)
+            return JsonResponse({'status': 200, 'html': html}, status=200)
+        except Exception as e:
+            return JsonResponse({'status': 500, 'error': e}, status=500)
+
+    def post(self, request, tag_id):
+        try:
+            tag = Tag.objects.get(pk=tag_id)
+            form = TagForm(request.POST, instance=tag)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({"success": True, 'status': 200}, status=200)
+
+            return JsonResponse({"success": False, "errors": form.errors, 'status': 500})
+        except Exception as e:
+            return JsonResponse({'status': 500, 'error': e}, status=500)

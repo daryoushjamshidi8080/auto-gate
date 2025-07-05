@@ -30,8 +30,8 @@
                             <span style="color: black;">offline</span>
                             {% endif %}
                         </td>
-                        <td class="d-flex justify-content-center">
-                            <button class="btn btn-sm btn-success me-1 update-tag"
+                        <td  class="d-flex justify-content-center">
+                            <button data-bs-target="#UpdateTagModal" data-bs-toggle="modal" class="btn btn-sm btn-success me-1 update-tag"
                                 data-id="{{ tag.id }}">ویرایش</button>
                             <button class="btn btn-sm btn-danger delete-tag" data-id="{{ tag.id }}">حذف</button>
                         </td>

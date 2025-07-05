@@ -34,6 +34,30 @@
 
 </div>
 
+<div class="modal fade" id="UpdateTagModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="UpdateForm" method="post">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">ایجاد خودرو</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body" id="car-update-modal-body">
+                    <!-- loded by ajax -->
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">ثبت</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+
 <div>
     <div id="anonymous_tag">
 
@@ -49,19 +73,65 @@
 
     let selectedTagId = null;
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () 
+    {
+        
         const anonymousTag = document.getElementById('anonymous_tag');
         const carListDev = document.getElementById('carList');
         const modalCreateCar = document.getElementById('createNewTagModal');
         const modalBody = document.getElementById('car-modal-body');
         const form = document.getElementById('carCreateForm');
-        
 
-            // const carList = document.getElementById('carList')
+        const modalUpdateCar = document.getElementById('UpdateTagModal');
+        const updateModalBody = document.getElementById('car-update-modal-body');
+        const updateForm = document.getElementById('UpdateForm');
 
-        // const url = e.target.getAttribute('data-url');
-        // console.log(url)
-        
+        let tagId = null;
+        modalUpdateCar.addEventListener('show.bs.modal', function (e) 
+        {
+            tagId = e.relatedTarget.getAttribute('data-id');
+
+            console.log(tagId)
+            fetch(`/tag/update-tag/${tagId}/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        updateModalBody.innerHTML = data.html;
+                    } else {
+                        updateModalBody.innerHTML = "<p> خطا در بارگذاری لیست تگ‌ها ناشناس </p>";
+                    }
+
+                }).catch(err => {
+                    console.error('error is loads rule : ', err);
+                })
+        });
+
+        updateForm.addEventListener('submit', function (e) 
+        {
+            e.preventDefault();
+            fetch(`/tag/update-tag/${tagId}/`,
+                {
+                    method: 'POST',
+                    body: new FormData(e.target)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        const NbsModal = bootstrap.Modal.getInstance(modalUpdateCar);
+                        NbsModal.hide();
+                        form.reset();
+                        alert("✅ خودرو با موفقیت ایجاد شد!");
+                        loadCarList();
+                    } else {
+                        updateModalBody.innerHTML = "<p> خطا دربارگذاری  </p>";
+                    }
+                }).catch(err => {
+                    console.error('error is loads rule : ', err);
+                })
+        })
+
+            
+
         function loadAnonymousTag() {
             fetch('{% url "tag:tag-anonymous" %}')
                 .then(res => res.json())
@@ -83,7 +153,7 @@
                 });
         }
 
-        // تعریف سراسری برای استفاده بیرون از این اسکوپ
+            // تعریف سراسری برای استفاده بیرون از این اسکوپ
         window.loadAnonymousTag = loadAnonymousTag;
         window.loadCarList = loadCarList;
 
@@ -92,7 +162,8 @@
         loadCarList();
 
 
-        carListDev.addEventListener('click', function (e) {
+        carListDev.addEventListener('click', function (e) 
+        {
             if (e.target.classList.contains('delete-tag')) {
 
 
@@ -130,7 +201,8 @@
 
 
         // بارگذاری فرم در هنگام باز شدن مدال
-        modalCreateCar.addEventListener('show.bs.modal', function () {
+        modalCreateCar.addEventListener('show.bs.modal', function () 
+        {
             fetch("{% url 'tag:tag-create' %}")
                 .then(res => res.json())
                 .then(data => {
@@ -138,22 +210,25 @@
                     const uidField = document.getElementById('id_uid')
                     const numberUid = document.getElementById('uid_tag')
 
-                    if(uidField){
+                    if (uidField) {
                         uidField.value = numberUid.textContent
                     }
                 });
         });
 
-        
-    
+
+
         // ایجاد خودرو با AJAX
-        form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', function (e) 
+        {
             e.preventDefault();
-            
+
+
 
 
             const formData = new FormData(form);
-            fetch("{% url 'tag:tag-create' %}", {
+            fetch("{% url 'tag:tag-create' %}", 
+            {
                 method: 'POST',
                 body: formData
             })
@@ -173,22 +248,24 @@
                 });
         });
 
-        carListDev.addEventListener('click', function (e) {
-            if(e.target.classList.contains('pagination-link')){
+        carListDev.addEventListener('click', function (e) 
+        {
+            if (e.target.classList.contains('pagination-link')) {
                 e.preventDefault();
-                
+
                 const url = e.target.getAttribute('data-url')
                 fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    console.log(data)
-                    carListDev.innerHTML = data.html
-                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data)
+                        carListDev.innerHTML = data.html
+                    })
 
             }
         })
 
-        anonymousTag.addEventListener('click', function (e) {
+        anonymousTag.addEventListener('click', function (e) 
+        {
             if (e.target.classList.contains('pagination-link')) {
                 // console.log('hi')
                 e.preventDefault();
@@ -197,12 +274,13 @@
                 console.log(url)
 
                 fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    anonymousTag.innerHTML = data.html
-                })
+                    .then(res => res.json())
+                    .then(data => {
+                        anonymousTag.innerHTML = data.html
+                    })
             }
         });
+    
 
     });
 
@@ -214,23 +292,23 @@
     }
 
     
-    setInterval(()=>{
+    // setInterval(()=>{
 
-        if(selectedTagId === null){
-            window.loadAnonymousTag()
-            console.log('regresh')
-        }else{
+    //     if(selectedTagId === null){
+    //         window.loadAnonymousTag()
+    //         console.log('regresh')
+    //     }else{
             
-            const pageStr = selectedTagId.split('?')[1].split('=')[1]
-            const pageNum = parseInt(pageStr);
+    //         const pageStr = selectedTagId.split('?')[1].split('=')[1]
+    //         const pageNum = parseInt(pageStr);
 
-            if(pageNum === 1){
-                console.log('regresh')
-                window.loadAnonymousTag()
-            }
-        }
+    //         if(pageNum === 1){
+    //             console.log('regresh')
+    //             window.loadAnonymousTag()
+    //         }
+    //     }
         
-    }, 2000)
+    // }, 2000)
 
 
 
