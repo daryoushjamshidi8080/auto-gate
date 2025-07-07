@@ -1,5 +1,6 @@
 from django.db import models
 from setting.models import antennas
+from django.utils import timezone
 
 
 # Create your models here.
@@ -19,7 +20,8 @@ class TagPermission(models.Model):
 
 class Tag(models.Model):
     uid = models.CharField(max_length=64, unique=True)
-    owner_name = models.CharField(max_length=64)
+    tag_number = models.IntegerField(unique=True, blank=True, null=True)
+    owner_name = models.CharField(max_length=64, blank=True, null=True)
     car_name = models.CharField(max_length=255, blank=True, null=True)
     pelicula = models.CharField(max_length=255, blank=True, null=True)
     number_unit = models.CharField(max_length=255, blank=True, null=True)

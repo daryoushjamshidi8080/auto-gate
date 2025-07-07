@@ -377,7 +377,18 @@
 
         // Load anonymous tag list
         function loadAnonymousTag() {
-            fetch('{% url "tag:tag-anonymous" %}')
+            let searchValue = window.location.search
+            if (searchValue) {
+                // console.log(searchValue)
+                selectedTagId = searchValue
+            } else {
+                searchValue = ''
+            }
+
+            console.log(searchValue)
+            let url = `{% url "tag:tag-anonymous" %}` + searchValue;
+
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     anonymousTag.innerHTML = data.html;
@@ -389,7 +400,16 @@
 
         // Load car list
         function loadCarList() {
-            fetch("{% url 'tag:tag-list' %}")
+
+            let searchValue = window.location.search
+            if(searchValue ){
+                console.log(searchValue)
+            }else{
+                searchValue = ''
+            }
+            let url = `{% url 'tag:tag-list' %}` + searchValue;
+
+            fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     carListDev.innerHTML = data.html;
@@ -528,7 +548,7 @@
                 window.loadAnonymousTag();
             }
         }
-    }, 2000);
+    }, 10000);
 </script>
 
 

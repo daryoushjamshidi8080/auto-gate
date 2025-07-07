@@ -29,4 +29,4 @@ class RfidConfig(AppConfig):
 
             rfid_manager.start_readers(info_reader)
 
-        Thread(target=delayed_start, daemon=True).start()
+        # Thread(target=delayed_start, daemon=True).start()

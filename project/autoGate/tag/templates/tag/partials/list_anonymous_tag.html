@@ -4,6 +4,14 @@
         <div class="bg-white p-4 rounded shadow">
             <div class="d-flex justify-content-between align-items-center flex-row-revers    mb-3">
                 <h5 class="mb-0"> تگ های مدیریت</h5>
+                    <div class="search-form">
+                        <form action="" method="get" id="searchTagAnonymousForm">
+                            <div class="input-group">
+                                {{ form.search_tag_anonymous }}
+                                <button type="submit" class="btn btn-primary">جستجو</button>
+                            </div>
+                        </form>
+                    </div>
             </div>
 
             <table class="table table-bordered table-striped text-center align-middle w-100">
@@ -53,8 +61,22 @@
     <ul class="pagination justify-content-center mt-3">
         {% if page_obj.has_previous %}
         <li class="page-item">
-            <a  data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.previous_page_number }}" class="page-link pagination-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
+            {% if request.GET.search_tag_anonymous %}
+            <a data-url="{% url 'tag:tag-anonymous' %}?search_tag_anonymous={{ request.GET.search_tag_anonymous }}&page={{ page_obj.previous_page_number }}"
+                class="page-link pagination-link"
+                href="?search_tag_anonymous={{ request.GET.search_tag_anonymous }}&page={{ page_obj.previous_page_number }}">
+                قبلی
+            </a>
+            {% else %}
+            <a data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.previous_page_number }}"
+                class="page-link pagination-link" href="?page={{ page_obj.previous_page_number }}">
+                قبلی
+            </a>
+            {% endif %}
         </li>
+        <!-- <li class="page-item">
+            <a  data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.previous_page_number }}" class="page-link pagination-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a>
+        </li> -->
         {% endif %}
 
         <li class="page-item disabled">
@@ -63,7 +85,17 @@
 
         {% if page_obj.has_next %}
         <li class="page-item">
-            <a  data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.next_page_number }}" class="page-link pagination-link" href="?page={{ page_obj.next_page_number }}">بعدی</a>
+            {% if request.GET.search_tag_anonymous %}
+                <a data-url="{% url 'tag:tag-anonymous' %}?search_tag_anonymous={{ request.GET.search_tag_anonymous }}&page={{ page_obj.next_page_number }}"
+                    class="page-link pagination-link"
+                    href="?search_tag_anonymous={{ request.GET.search_tag_anonymous }}&page={{ page_obj.next_page_number }}">صفحه
+                    بعد</a>
+            {% else %}
+                <a data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.next_page_number }}" class="page-link pagination-link"
+                    href="?page={{ page_obj.next_page_number }}">صفحه بعد</a>
+            {% endif %}
+                <!-- <a  data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.next_page_number }}" class="page-link pagination-link" href="?search_tag_anonymous={{ request.GET.search_tag_anonymous }}&page={{ page_obj.next_page_number }}">صفحه بعد</a> -->
+            <!-- <a  data-url="{% url 'tag:tag-anonymous' %}?page={{ page_obj.next_page_number }}" class="page-link pagination-link" href="?page={{ page_obj.next_page_number }}">بعدی</a> -->
         </li>
         {% endif %}
     </ul>

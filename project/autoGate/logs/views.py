@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.core.paginator import Paginator
 from .models import Logs
-
+from .forms import LogsForm
 
 # Create your views here.
 
@@ -18,8 +18,11 @@ class LogsView(View):
 
 
 class ShowLogsView(View):
+    form_class = LogsForm
+
     def get(self, request):
         try:
+            form = self.form_class()
             page_number = request.GET.get('page', 1)
             logs = Logs.objects.order_by('-create_at')
             paginator = Paginator(logs, 25)
@@ -29,7 +32,8 @@ class ShowLogsView(View):
                 'logs/partials/logs_list.html',
                 {
                     'logs': page_obj,
-                    'page_obj': page_obj
+                    'page_obj': page_obj,
+                    'form': form,
                 },
                 request=request
             )
