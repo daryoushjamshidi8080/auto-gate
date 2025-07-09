@@ -6,7 +6,7 @@ class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
         fields = ['uid', 'tag_number', 'owner_name', 'rule', 'is_active',
-                  'car_name', 'pelicula', 'number_unit']
+                  'car_name', 'pelicula', 'number_unit', 'tag_number']
         widgets = {
             'uid': forms.TextInput(attrs={'class': 'form-control'}),
             'owner_name': forms.TextInput(attrs={'class': 'form-control'}),

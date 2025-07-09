@@ -10,32 +10,50 @@
                 <thead class="table-dark">
                     <tr>
                         <th scope="col">تاریخ</th>
-                        <th scope="col">نام خودرو</th>
                         <th scope="col">نام مالک</th>
                         <th scope="col">پلاک خودرو</th>
                         <th scope="col">شماره واحد</th>
                         <th scope="col">درب</th>
                         <th scope="col"> قانون </th>
                         <th scope="col">وضعیت</th>
-                        <th scope="col">عملیات</th>
+                        <th scope="col"> تگ شماره</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for log in logs %}
                     <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td>{{ log.create_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ log.owner_name }}</td>
+                        <td>{{ log.car_name }}</td>
+                        <td>{{ log.unit_number }}</td>
+                        <td>{{ log.door }}</td>
+                        <td>{{ log.rule }}</td>
+                        <td>
+                            {% if log.status == 'noactive' %}
+                            <span style="color: red; font-weight: bold;">
+                                <i class="bi bi-x-circle-fill"></i>
+                                تگ غیرفعال
+                            </span>
+                            {% elif log.status == 'traffic' %}
+
+                            <span style="color: orange; font-weight: bold;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                ورود درب اشتباهی
+                            </span>
+                            {% elif log.status == 'successful' %}
+
+                            <span style="color: green; font-weight: bold;">
+                                <i class="bi bi-check-circle-fill"></i>
+                                موفق
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ log.tag_number }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5">هیچ تگی یافت نشد.</td>
+                        <td colspan="8">هیچ تگی یافت نشد.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

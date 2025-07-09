@@ -82,7 +82,8 @@ class RfidThread(Thread):
         while not self.stop_evt.is_set():
             try:
                 with self.lock:
-                    print(self.info_reader)
+                    print('self.info_reader : ', self.info_reader)
+                    # time.sleep(1)
                     for info in self.info_reader:
                         if self.stop_evt.is_set():
                             break
@@ -99,13 +100,11 @@ class RfidThread(Thread):
 
                         self.ser.write(cmd_scan)
 
-                        resp = self.ser.read(16)
-                        # print(
-                        #     f'name : {info["reader_id"]},,,,,,, reponse ::::::::::::: ',  len(resp))
+                        resp = self.ser.read(64)
+                        # print('resp  read : ', resp)
+
                         status = 'Online' if len(resp) >= 6 and len(
                             resp) != 9 else 'Offline'
-                        # print(
-                        #     f'reader name : {info["reader_id"]} """""""""""  { status } ')
 
                         if self.status_rfid.get(info['reader_id']) is None or self.status_rfid.get(info['reader_id']) != status:
                             self.status_rfid[info['reader_id']] = status
@@ -119,6 +118,7 @@ class RfidThread(Thread):
                                           )
 
                         if resp and resp.hex() != self.last_frame:
+
                             self.last_frame = resp.hex()
 
                             self.ser.write(cmd_uid)
@@ -129,15 +129,20 @@ class RfidThread(Thread):
                             if len(uid_hex_full) >= 28:
                                 uid_hex = uid_hex_full[12:28]
                                 if uid_hex:
-                                    respons_reque = requests.post(
-                                        "http://127.0.0.1:8000/rfid/read_tag/",
-                                        json={
-                                            'uid': uid_hex,
-                                            "reader_id": info['reader_id']
-                                        },
-                                        timeout=3
-                                    )
-                                    data = respons_reque.json()
+                                    try:
+                                        print('readdd')
+                                        respons_reque = requests.post(
+                                            "http://127.0.0.1:8000/rfid/read_tag/",
+                                            json={
+                                                'uid': uid_hex,
+                                                "reader_id": info['reader_id']
+                                            },
+                                            timeout=3
+                                        )
+
+                                        data = respons_reque.json()
+                                    except:
+                                        pass
                                     print('data response tag :', data)
                                     print(data.get('allowed'))
                                     if data.get('allowed'):
@@ -145,8 +150,8 @@ class RfidThread(Thread):
                                         self.ser.write(
                                             cmd_deactive_rellay)
 
-                                    print(
-                                        f"✅ [{info['reader_id']}] UID:", uid_hex)
+                                    # print(
+                                        # f"✅ [{info['reader_id']}] UID:", uid_hex)
 
                             self.ser.write(cmd_clear)
                             time.sleep(0.03)
@@ -166,7 +171,7 @@ class RfidThread(Thread):
                                       }
                                       )
 
-                print('⚠️ Connection lost. Trying to reconnect... error is :', e)
+                print('⚠️⚠️ Connection lost. Trying to reconnect... error is :', e)
                 self.ser.close()
                 self.ser = None
                 while not self.ser:
@@ -179,11 +184,11 @@ class RfidThread(Thread):
                         except:
                             # self.ser = ser.port
                             print('⏳ Reconnecting in 5 seconds...')
-                    time.sleep(1)
+                    time.sleep(0.03)
 
-                print(
-                    f"⚠️ [reconnecting !!! is error : {e}")
-                time.sleep(1)
+                    print(
+                        f"⚠️ [reconnecting !!! is error : {e}")
+                time.sleep(0.03)
 
 
 # فرض بر این است که
@@ -199,7 +204,7 @@ if __name__ == '__main__':
     ]
 
     rfid_handler = RfidThread(
-        ser=serial.Serial('/dev/ttyUSB1', 9600, timeout=0.1),
+        ser=serial.Serial('/dev/ttyUSB0', 9600, timeout=0.1),
         lock=Lock(), stop_evt=Event(), info_reader=reader_info)
 
     rfid_handler.start()

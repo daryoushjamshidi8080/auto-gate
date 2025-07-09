@@ -1,19 +1,23 @@
 <div class="mb-3">
-    {{ form.permission_name.label_tag }}
+    <h6>اسم قانون</h6>
     {{ form.permission_name }}
     {% for error in form.permission_name.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
 <div class="mb-3">
-    {{ form.antenna.label_tag }}
+    <h6>
+        آنتن ها 
+    </h6>
     {{ form.antenna }}
     {% for error in form.antenna.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
-<div class="mb-3">
-    {{ form.is_active.label_tag }}
+<div class="mb-3 d-flex">
+    <h6> 
+        فعال
+    </h6> &nbsp;
     {{ form.is_active }}
     {% for error in form.is_active.errors %}
     <div class="text-danger">{{ error }}</div>

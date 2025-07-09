@@ -11,13 +11,16 @@ from .models import AnonymousTag
 from rfid_manager import rfid_manager
 from setting.models import antennas
 from tag.models import TagPermission
+from logs.models import Logs
+from datetime import datetime, timedelta
+import os
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StopThread(View):
     def post(self, request):
         try:
-            print('Stop Thread ================================================')
+            # print('Stop Thread ================================================')
 
             data = json.loads(request.body)
 
@@ -65,6 +68,32 @@ class StartThread(View):
             )
 
 
+tag_access_times = {}
+
+
+def check_tag_access(uid,  dellay=30):
+    now = datetime.now()
+    last_access = tag_access_times.get(uid)
+
+    if last_access:
+        diff = (now - last_access).total_seconds()
+        if diff < dellay:
+            tag_access_times[uid] = now
+            return False
+
+        else:
+            tag_access_times[uid] = now
+            return True
+    else:
+        tag_access_times[uid] = now
+        return True
+
+
+BACKUP_DIR = os.path.join(os.path.dirname(__file__), 'backups')
+if not os.path.exists(BACKUP_DIR):
+    os.makedirs(BACKUP_DIR)
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class ReadTag(View):
     def get(self, request):
@@ -74,65 +103,93 @@ class ReadTag(View):
         try:
             payload = json.loads(request.body.decode())
             uid = payload.get('uid')
-            reader_id = payload.get('reader_id', '')
+            reader_id = payload.get('reader_id')
+            # print('reader_id : ', reader_id)
+            # print('---------------------------------------------------------')
+            antenna = antennas.objects.get(name=reader_id)
+            print('antenna : ', antenna)
+            # print('---------------------------------------------------------')
+            # print('antenna : ', antenna)
+            # name_antenna = antenna
 
+            open_time = check_tag_access(uid, antenna.open_time)
+
+            print('open_time : ', open_time)
+
+            # last_acc
             if not uid:
                 raise ValueError('uid field is required')
-
-            # print('uid :', uid)
-
-            # print('**/****************************************************************')
 
             try:
 
                 tag = Tag.objects.filter(uid=uid).first()
-                antenna = antennas.objects.get(name=reader_id)
 
                 permission = tag.rule
-
                 found = tag is not None
+                permission_ok = False
+                status = 'successful'
+                if open_time:
+                    permission = TagPermission.objects.filter(
+                        is_active=True,
+                        permission_name=permission
+                    ).first()
 
-                permission_ok = None
+                    list_antennas = []
 
-                # print('0000000000000000000000000000000000000000000000')
-                # print('permission :', permission.antenna.all())
-                # for i in permission.antenna.all():
-                #     print(i)
+                    for i in permission.antenna.all():
+                        list_antennas.append(int(i.number))
 
-                # # print()
-                if tag and tag.is_active:
-                    if permission.antenna.filter(id=antenna.id).exists():
+                    if antenna.number in list_antennas:
                         permission_ok = True
                     else:
+                        status = 'traffic'
+
+                    print('antenna.is_active : ', antenna.is_active)
+                    if tag.is_active == False or antenna.is_active == False:
+                        status = 'noactive'
                         permission_ok = False
 
+                    Logs.objects.create(
+                        tag_number=tag.tag_number,
+                        uid=uid,
+                        status=status,
+                        rule=permission,
+                        door=antenna.name,
+                        unit_number=tag.pelicula,
+                        car_name=tag.car_name,
+                        owner_name=tag.owner_name
+                    )
+
+                logss = Logs.objects.all().order_by('create_at')
+                log_filename = os.path.join(
+                    BACKUP_DIR, 'backup_deleted_logs.txt')
+
+                if logss.count() > 30000:
+                    extra = logss.count() - 30000
+                    for log in logss[:extra]:
+                        with open(log_filename, 'a', encoding='utf-8') as f:
+                            f.write(
+                                f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+                                f"Deleted Log - Owner: {log.owner_name} | Car: {log.car_name} | "
+                                f"Unit: {log.unit_number} | Tag: {log.tag_number} | Status: {log.status}\n"
+                                f"UID: {log.uid} | Rule: {log.rule} | Door: {log.door}\n"
+                                f" log time : {log.create_at}\n"
+                            )
+                        log.delete()
             except Exception as e:
-                print('⛓️‍💥 ⛓️‍💥not found tag -> Exception:', str(e))
+                print('⛓️‍💥 ⛓️‍💥not found tag ')
                 permission_ok = False
 
-            print('**/****************************************************************')
-            print(
-                '======================================================================')
-
-            # if permission.antenna.exists() and antenna in permission.antenna.all():
-            #     permission_ok = True
-            # elif not permission.antenna.exists():
-            #     permission_ok = False
-            # else:
-            #     permission_ok = False
-
-            # if found:
-            #     # permission_ok = True
-            #     print('tag found', tag.rule)
-
-            AnonymousTag.objects.create(
-                uid_anonymousTag=uid, antenna=reader_id)
-            tags_anonymous = AnonymousTag.objects.all()
-            if tags_anonymous.count() > 400:
-                extra = tags_anonymous.count() - 400
-                for i in tags_anonymous[:extra]:
-                    print(i.id)
-                    i.delete()
+            if open_time:
+                print('---------------------------------------------------------')
+                print('antenna=antenna.name : ', reader_id)
+                AnonymousTag.objects.create(
+                    uid_anonymousTag=uid, antenna=reader_id)
+                tags_anonymous = AnonymousTag.objects.all()
+                if tags_anonymous.count() > 400:
+                    extra = tags_anonymous.count() - 400
+                    for i in tags_anonymous[:extra]:
+                        i.delete()
 
             return JsonResponse(
                 {

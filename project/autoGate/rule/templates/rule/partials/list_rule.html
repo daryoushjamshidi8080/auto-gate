@@ -40,8 +40,9 @@
                     <td class="d-flex justify-content-center">
                         <button data-bs-target="#UpdateTagModal" data-bs-toggle="modal" class="btn btn-sm btn-success me-1 update-rule"
                             data-id="{{ rule.id }}">ویرایش</button>
-                        <button class="btn btn-sm btn-danger delete-rule" data-name="{{ antenna.name}}"
-                            data-id="{{ rule.id }}">حذف</button>
+                        {% if user.is_superuser %} 
+                            <button class="btn btn-sm btn-danger delete-rule" data-name="{{ antenna.name}}" data-id="{{ rule.id }}">حذف</button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}

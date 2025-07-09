@@ -15,7 +15,7 @@ class home(LoginRequiredMixin, View):
 class ShowLogsHomeView(View):
     def get(self, request):
         try:
-            logs = Logs.objects.all().order_by('-create_at')[:25]
+            logs = Logs.objects.all().order_by('-create_at')[:15]
 
             html = render_to_string(
                 'home/partials/logs_list.html',

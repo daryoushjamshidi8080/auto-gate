@@ -1,4 +1,4 @@
-f<div class="container-fluid px-4">
+<div class="container-fluid px-4">
     <div id="car-list" class="w-100">
         <h1 class="my-4">خودرو ها</h1>
 
@@ -21,6 +21,9 @@ f<div class="container-fluid px-4">
                         <th scope="col">نام مالک</th>
                         <th scope="col">uid</th>
                         <th scope="col">قوانین</th>
+                        <th scope="col"> پلاک خودرو</th>
+                        <th scope="col"> مجتمع </th>
+                        <th scope="col"> شماره واحد </th>
                         <th scope="col">وضعیت</th>
                         <th scope="col">عملیات</th>
                     </tr>
@@ -29,14 +32,17 @@ f<div class="container-fluid px-4">
                     {% for tag in tags %}
                     <tr>
                         <td> {{ tag.tag_number }} </td>
-                        <td>{{ tag.owner_name }}</td>
+                        <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" >{{ tag.owner_name }}</td>
                         <td>{{ tag.uid }}</td>
-                        <td>{{ tag.rule }}</td>
+                        <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" >{{ tag.rule }}</td>
+                        <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ tag.car_name }}</td>
+                        <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" >{{ tag.pelicula }}</td>
+                        <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ tag.number_unit }}</td>
                         <td>
                             {% if tag.is_active %}
-                            <span style="color: rgb(30, 255, 0);">online</span>
+                            <span style="color: rgb(30, 255, 0);">فعال</span>
                             {% else %}
-                            <span style="color: black;">offline</span>
+                            <span style="color: black;">غیرفعال</span>
                             {% endif %}
                         </td>
                         <td  class="d-flex justify-content-center">

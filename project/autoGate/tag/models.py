@@ -15,7 +15,7 @@ class TagPermission(models.Model):
 
     def __str__(self):
         antennas = ", ".join([a.name for a in self.antenna.all()])
-        return f'{self.permission_name} | Antennas: {antennas}'
+        return f'{self.permission_name}'
 
 
 class Tag(models.Model):
@@ -26,7 +26,7 @@ class Tag(models.Model):
     pelicula = models.CharField(max_length=255, blank=True, null=True)
     number_unit = models.CharField(max_length=255, blank=True, null=True)
     rule = models.ForeignKey(
-        TagPermission, on_delete=models.CASCADE, related_name="tags_permissions")
+        TagPermission, on_delete=models.SET_NULL, null=True, related_name="tags_permissions")
     is_active = models.BooleanField(default=False)
     create_at = models.DateTimeField(auto_now=True)
 

@@ -26,9 +26,11 @@ class ListTagView(LoginRequiredMixin, View):
         tags = Tag.objects.all().order_by('-create_at')
 
         if request.GET.get('search_tag'):
-            tags = Tag.objects.filter(
-                tag_number=request.GET.get('search_tag')).order_by('-create_at')
-            print(tags)
+            try:
+                tags = Tag.objects.filter(
+                    tag_number=request.GET.get('search_tag')).order_by('-create_at')
+            except:
+                tags = Tag.objects.all().order_by('-create_at')
 
         page_number = request.GET.get('page', 1)
 
@@ -163,8 +165,11 @@ class UpdateTagView(LoginRequiredMixin, View):
     def post(self, request, tag_id):
         try:
             tag = Tag.objects.get(pk=tag_id)
+            number = tag.tag_number
             form = TagForm(request.POST, instance=tag)
             if form.is_valid():
+                tag_instance = form.save(commit=False)
+                tag_instance.tag_number = number
                 form.save()
                 return JsonResponse({"success": True, 'status': 200}, status=200)
 

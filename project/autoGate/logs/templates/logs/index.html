@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 
 {% block title %} گزارشات {% endblock %}
-
+{% block link %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+{% endblock %}
 {% block content %}
     <div class="">
         <div class="car_list" id="tagList">
@@ -11,11 +13,28 @@
 {% block js %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+
+
 <script>
+
+    let selectedTagId = null;
+
+
     document.addEventListener('DOMContentLoaded', function(){
         const tagList = document.getElementById('tagList')
+
         function loadCarList() {
-            fetch('/logs/show-list/')
+
+            let searchValue = window.location.search
+            if (searchValue) {
+                selectedTagId = searchValue   
+            }else{
+                searchValue = ''
+            }
+
+            console.log(searchValue)
+            let url = `{% url "logs:show_logs" %}` + searchValue;
+            fetch(url)
             .then(res => res.json())
             .then(data => {
                 tagList.innerHTML = data.html;
@@ -24,9 +43,40 @@
                 console.error("Error loading car list:", err);
             });
         }
-
         loadCarList();
         window.loadCarList = loadCarList;
+
+
+        tagList.addEventListener('click', function (e) {
+            if (e.target.classList.contains('pagination-link')) {
+
+                e.preventDefault();
+
+                console.log('hi')
+                const url = e.target.getAttribute('data-url');
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                        tagList.innerHTML = data.html;
+                    });
+            }
+        });
     })
+
+
+    setInterval(() => {
+            if (selectedTagId === null) {
+                window.loadCarList();
+                console.log('refresh');
+            } else {
+                const pageStr = selectedTagId.split('?')[1].split('=')[1];
+                const pageNum = parseInt(pageStr);
+                if (pageNum === 1) {
+                    console.log('refresh');
+                    window.loadCarList();
+                }
+            }
+        }, 20000);
 </script>
 {% endblock %}

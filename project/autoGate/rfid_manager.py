@@ -67,7 +67,7 @@ class RfidManager:
         self.thread = thread
 
     def stop_tread(self, reader_id, adder):
-
+        print("🛑 Stopping thread:", self.thread)
         to_remove = None
         for index, info in enumerate(self.info_thread):
             print('index : ', index, 'info : ', info)

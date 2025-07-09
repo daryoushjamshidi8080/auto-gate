@@ -1,7 +1,7 @@
 from django import forms
 
 
-class LogsForm(forms.Form):
+class LogsSearchForm(forms.Form):
     search = forms.CharField(required=False, widget=forms.TextInput(
         attrs={'class': 'form-control'}))
 

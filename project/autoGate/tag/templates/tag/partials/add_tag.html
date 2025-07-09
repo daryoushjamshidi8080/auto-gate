@@ -6,42 +6,42 @@
     {% endfor %}
 </div>
 <div class="mb-3">
-    {{ form.owner_name.label_tag }}
+    <h5>نام مالک</h5>
     {{ form.owner_name }}
     {% for error in form.owner_name.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
 <div class="mb-3">
-    {{ form.car_name.label_tag }}
+    <h5>پلاک خودرو</h5>
     {{ form.car_name }}
     {% for error in form.car_name.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
 <div class="mb-3">
-    {{ form.pelicula.label_tag }}
+    <h5>مجتمع</h5>
     {{ form.pelicula }}
     {% for error in form.pelicula.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
 <div class="mb-3">
-    {{ form.number_unit.label_tag }}
+    <h6>واحد</h6>
     {{ form.number_unit }}
     {% for error in form.number_unit.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
 <div class="mb-3">
-    {{ form.rule.label_tag }}
+    <h6> قانون </h6>
     {{ form.rule }}
     {% for error in form.rule.errors %}
     <div class="text-danger">{{ error }}</div>
     {% endfor %}
 </div>
-<div class="mb-3">
-    {{ form.is_active.label_tag }}
+<div class="mb-3 d-flex">
+    <h6>فعال</h6> &nbsp; &nbsp;
     {{ form.is_active }}
     {% for error in form.is_active.errors %}
     <div class="text-danger">{{ error }}</div>

@@ -30,10 +30,12 @@
 
         loadCarList();
         window.loadCarList = loadCarList;
+        
     })
 
     setInterval(() => {
-        window.loadCarList()
-    }, 2000)
+            console.log('reload car list home');
+            window.loadCarList()
+        }, 2000)
 </script>
 {% endblock %}
