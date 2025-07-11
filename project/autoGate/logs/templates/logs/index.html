@@ -1,19 +1,24 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %} گزارشات {% endblock %}
 {% block link %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"> -->
+    <link rel="stylesheet" href="{% static 'setting/css/bootstrap-icons.css' %}">
+
 {% endblock %}
 {% block content %}
     <div class="">
+        <i class="bi bi-car-front-fill">سس</i>
+
         <div class="car_list" id="tagList">
         </div>
     </div>
 {% endblock %}
 {% block js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
 
-
+<script src="{% static 'setting/css/bootstrap.bundle.min.js' %}"></script>
 
 <script>
 
