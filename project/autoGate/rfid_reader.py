@@ -1,4 +1,3 @@
-import os
 from threading import Thread, Lock, Event
 from threading import Thread, Lock
 import serial.tools.list_ports
@@ -7,12 +6,11 @@ import time
 import requests
 import json
 from threading import Thread, Event, Lock
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
+import os
 
-load_dotenv()
-
-SERVER_IP = os.getenv("SERVER_IP")
-SERVER_PORT = os.getenv("SERVER_PORT")
+# SERVER_IP = os.getenv("SERVER_IP")
+# SERVER_PORT = os.getenv("SERVER_PORT")
 
 # list IDs of Arfid device
 ALLOWED_DEVICES = [
@@ -116,7 +114,7 @@ class RfidThread(Thread):
                             self.status_rfid[info['reader_id']] = status
                             print('ok')
 
-                            requests.post(f'http://{SERVER_IP}:{SERVER_PORT}/rfid/update_status/',
+                            requests.post('http://127.0.0.1:8000/rfid/update_status/',
                                           json={
                                               "reader_id": info['reader_id'],
                                               "status": status
@@ -138,7 +136,7 @@ class RfidThread(Thread):
                                     try:
                                         print('readdd')
                                         respons_reque = requests.post(
-                                            f"http://{SERVER_IP}:{SERVER_PORT}/rfid/read_tag/",
+                                            "http://127.0.0.1:8000/rfid/read_tag/",
                                             json={
                                                 'uid': uid_hex,
                                                 "reader_id": info['reader_id']
@@ -170,7 +168,7 @@ class RfidThread(Thread):
                         self.status_rfid[info['reader_id']] = 'Offline'
                         print('ok')
 
-                        requests.post(f'http://{SERVER_IP}:{SERVER_PORT}/rfid/update_status/',
+                        requests.post('http://127.0.0.1:8000/rfid/update_status/',
                                       json={
                                           "reader_id": info['reader_id'],
                                           "status": 'Offline'
