@@ -271,6 +271,7 @@ import time
 import requests
 import json
 from threading import Thread, Event, Lock
+import re
 # from dotenv import load_dotenv
 import os
 
@@ -352,9 +353,11 @@ class RfidThread(Thread):
             try:
                 with self.lock:
                     print('self.info_reader : ', self.info_reader)
-                    # time.sleep(1)
+                    time.sleep(0.03)
+                    print('=====================================')
                     for info in self.info_reader:
                         if self.stop_evt.is_set():
+                            print('🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲')
                             break
 
                         cmd_scan = make_cmd(
@@ -366,38 +369,61 @@ class RfidThread(Thread):
                             info['addr'], 0x04, 0x2d, 0x02, 0x01)
                         cmd_deactive_rellay = make_cmd(
                             info['addr'], 0x04, 0x2d, 0x02, 0x00)
-
+                        self.ser.write(cmd_clear)
+                        time.sleep(0.03)
                         self.ser.write(cmd_scan)
                         time.sleep(0.03)
                         resp = self.ser.read(64)
-                        # print('resp  read : ', resp)
+                        print(-1)
+                        # self.ser.write(cmd_clear)
 
-                        status = 'Online' if len(resp) >= 6 and len(
-                            resp) != 9 else 'Offline'
+                        print(0)
+                        print('😁 respons : ', resp.hex())
+                        print(1)
+                        data = str(resp.hex())
+                        print(2)
+                        addr = format(int(info['addr']), '02x')
+                        print(3)
+                        print('addr : ', addr)
+                        print(4)
+                        pattern = f"0b{addr}03[a-f0-9]{{6}}"
+                        print(5)
+                        frames = re.findall(pattern, data)
+                        print(6)
+                        print("frames : ", frames)
+                        print(7)
+                        print('info  :', info)
+                        print('resp  read : ', resp)
+
+                        if frames:
+                            if addr == frames[0][2:4]:
+                                status = 'online'
+                            else:
+                                status = 'offline'
+                        else:
+                            status = 'offline'
 
                         if self.status_rfid.get(info['reader_id']) is None or self.status_rfid.get(info['reader_id']) != status:
                             self.status_rfid[info['reader_id']] = status
-                            print('ok')
-
+                            print('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
                             requests.post('http://127.0.0.1:8000/rfid/update_status/',
                                           json={
                                               "reader_id": info['reader_id'],
                                               "status": status
                                           }
                                           )
+                            print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+                        if frames:
+                            if str(frames[0][8:10]) != '00':
+                                print('hi')
+                                # self.ser.write(cmd_clear)
+                                time.sleep(0.03)
+                                self.ser.write(cmd_uid)
+                                respost = self.ser.read(64)
 
-                        if resp and resp.hex() != self.last_frame:
-
-                            self.last_frame = resp.hex()
-
-                            self.ser.write(cmd_uid)
-                            time.sleep(0.03)
-
-                            uid_resp = self.ser.read(16)
-
-                            uid_hex_full = uid_resp.hex()
-                            if len(uid_hex_full) >= 28:
-                                uid_hex = uid_hex_full[12:28]
+                                print('🍆🍆🍆🍆🍆repost:', respost.hex()[12:28])
+                                self.ser.write(cmd_clear)
+                                uid_hex = respost.hex()[12:28]
                                 if uid_hex:
                                     try:
                                         respons_reque = requests.post(
@@ -410,6 +436,7 @@ class RfidThread(Thread):
                                         )
 
                                         data = respons_reque.json()
+                                        print('🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲')
                                     except:
                                         pass
                                     print('data response tag :', data)
@@ -418,14 +445,6 @@ class RfidThread(Thread):
                                         self.ser.write(cmd_active_rellay)
                                         self.ser.write(
                                             cmd_deactive_rellay)
-
-                                    # print(
-                                        # f"✅ [{info['reader_id']}] UID:", uid_hex)
-
-                            self.ser.write(cmd_clear)
-                            time.sleep(0.03)
-
-                    time.sleep(0.03)
             except Exception as e:
                 status = 'Offline'
                 for info in self.info_reader:

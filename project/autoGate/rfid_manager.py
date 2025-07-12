@@ -50,7 +50,6 @@ class RfidManager:
         print('🛑 Stopping previous thread:', self.thread)
         if self.thread:
             self.thread.stop_evt.set()
-            # self.thread.join()  # خیلی مهم
             print('✅ Previous thread fully stopped.')
 
         self.info_thread = reader_info
@@ -73,6 +72,7 @@ class RfidManager:
             print('index : ', index, 'info : ', info)
             if info['reader_id'] == reader_id and int(info['addr']) == int(adder):
                 print('info thread : ', self.info_thread)
+                print('**************************************')
                 self.info_thread.pop(index)
                 to_remove = True
                 break

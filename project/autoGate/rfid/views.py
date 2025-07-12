@@ -207,7 +207,7 @@ class ReadTag(View):
 class UpdateStatus(View):
     def post(self, request):
         try:
-            print('hi')
+            print('zarttttttttttttttttttttttttttttttttttttttttttttttttttt')
             payload = json.loads(request.body.decode('utf-8'))
             print(payload)
             reader_id = payload.get('reader_id')
