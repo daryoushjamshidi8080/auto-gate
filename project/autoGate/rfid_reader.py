@@ -378,6 +378,7 @@ class RfidThread(Thread):
                         # self.ser.write(cmd_clear)
 
                         print(0)
+                        #
                         print('😁 respons : ', resp.hex())
                         print(1)
                         data = str(resp.hex())
