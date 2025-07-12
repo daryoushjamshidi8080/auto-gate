@@ -344,7 +344,7 @@ class RfidThread(Thread):
         self.lock = lock
         self.info_reader = info_reader
         self.stop_evt = stop_evt
-        self.last_frame = None
+        # self.last_frame = None
         self.status_rfid = dict()
 
     def run(self):
@@ -352,12 +352,16 @@ class RfidThread(Thread):
         while not self.stop_evt.is_set():
             try:
                 with self.lock:
-                    print('self.info_reader : ', self.info_reader)
-                    time.sleep(0.03)
+                    # print('self.info_reader : ', self.info_reader)
+                    # time.sleep(0.01)
                     print('=====================================')
+                    x = 0
                     for info in self.info_reader:
+                        x += 1
+                        print('🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲 rund : ', x)
+                        print('for : info: ', info)
                         if self.stop_evt.is_set():
-                            print('🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲')
+                            # print('🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲')
                             break
 
                         cmd_scan = make_cmd(
@@ -373,27 +377,27 @@ class RfidThread(Thread):
                         time.sleep(0.03)
                         self.ser.write(cmd_scan)
                         time.sleep(0.03)
-                        resp = self.ser.read(64)
-                        print(-1)
+                        resp = self.ser.read(32)
+                        # print(-1)
                         # self.ser.write(cmd_clear)
 
-                        print(0)
+                        # print(0)
                         #
                         print('😁 respons : ', resp.hex())
-                        print(1)
+                        # print(1)
                         data = str(resp.hex())
-                        print(2)
+                        # print(2)
                         addr = format(int(info['addr']), '02x')
-                        print(3)
+                        # print(3)
                         print('addr : ', addr)
-                        print(4)
+                        # print(4)
                         pattern = f"0b{addr}03[a-f0-9]{{6}}"
-                        print(5)
+                        # print(5)
                         frames = re.findall(pattern, data)
-                        print(6)
+                        # print(6)
                         print("frames : ", frames)
-                        print(7)
-                        print('info  :', info)
+                        # print(7)
+                        # print('info  :', info)
                         print('resp  read : ', resp)
 
                         if frames:
@@ -404,18 +408,21 @@ class RfidThread(Thread):
                         else:
                             status = 'offline'
 
+                        print(status)
+
                         if self.status_rfid.get(info['reader_id']) is None or self.status_rfid.get(info['reader_id']) != status:
                             self.status_rfid[info['reader_id']] = status
-                            print('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
+                            # print('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
                             requests.post('http://127.0.0.1:8000/rfid/update_status/',
                                           json={
                                               "reader_id": info['reader_id'],
                                               "status": status
                                           }
                                           )
-                            print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+                            # print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
                         if frames:
-                            if str(frames[0][8:10]) != '00':
+                            print('par :   ', frames[0][9:10])
+                            if str(frames[0][9:10]) != '0':
                                 print('hi')
                                 # self.ser.write(cmd_clear)
                                 time.sleep(0.03)
@@ -437,13 +444,14 @@ class RfidThread(Thread):
                                         )
 
                                         data = respons_reque.json()
-                                        print('🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲')
+                                        # print('🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲🥲')
                                     except:
                                         pass
                                     print('data response tag :', data)
                                     print(data.get('allowed'))
                                     if data.get('allowed'):
                                         self.ser.write(cmd_active_rellay)
+                                        # self.ser.write()
                                         self.ser.write(
                                             cmd_deactive_rellay)
             except Exception as e:

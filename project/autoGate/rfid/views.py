@@ -121,12 +121,15 @@ class ReadTag(View):
                 raise ValueError('uid field is required')
 
             try:
-
+                # print(80)
                 tag = Tag.objects.filter(uid=uid).first()
-
+                # print(81)
                 permission = tag.rule
+                # print(82)
                 found = tag is not None
+                # print(83)
                 permission_ok = False
+                # print(84)
                 status = 'successful'
                 if open_time:
                     permission = TagPermission.objects.filter(
